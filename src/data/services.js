@@ -140,6 +140,35 @@ export const services = [
       },
     ],
   },
+  {
+    id: 'traditional',
+    title: 'Traditional Photography',
+    tagline: 'Classic memories for generations to come',
+    shortDescription: 'Classic, posed photography that beautifully documents every tradition and ritual.',
+    description: 'Our traditional photography service focuses on documenting the entire event with classic, timeless portraits and event coverage. We ensure no important moment, ritual, or key guest is missed. With a more directed approach, we create crisp, bright images perfect for traditional albums that parents and grandparents cherish.',
+    features: [
+      'Comprehensive event coverage',
+      'Posed group & family portraits',
+      'Crisp, bright editing style',
+      'Detailed ritual documentation',
+      'Traditional videography options',
+      'Classic album creation',
+    ],
+    faqs: [
+      {
+        question: 'What is the difference between traditional and candid/cinematic photography?',
+        answer: 'Traditional photography is more directed and posed, focusing on documenting everyone who attended and ensuring classic, clear shots of rituals. Candid photography is unposed and focuses on genuine emotions and storytelling.',
+      },
+      {
+        question: 'Can we get both traditional and cinematic coverage?',
+        answer: 'Yes! We highly recommend a mix of both for complete wedding coverage. You can combine them in your custom quote.',
+      },
+      {
+        question: 'Do you provide traditional videography as well?',
+        answer: 'Yes, our Luxury traditional package includes traditional videography, or it can be added to other packages.',
+      },
+    ],
+  },
 ];
 
 export default services;

@@ -236,3 +236,56 @@ html.lenis, html.lenis body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
+
+/* Make native date inputs open the calendar picker when clicked anywhere */
+input[type="date"] {
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  color: transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+
+/* react-phone-number-input custom styles */
+.custom-phone-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.custom-phone-input .PhoneInputCountry {
+  margin-right: 12px;
+}
+
+.custom-phone-input .PhoneInputCountrySelectArrow {
+  opacity: 0.5;
+  border-right: 1px solid white;
+  border-bottom: 1px solid white;
+  width: 4px;
+  height: 4px;
+}
+
+.custom-phone-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #FFFFF0; /* ivory */
+  font-family: inherit;
+  font-size: 0.875rem; /* text-sm */
+  padding: 6px 0;
+  outline: none;
+}
+
+.custom-phone-input input::placeholder {
+  color: rgba(255, 255, 240, 0.25); /* ivory/25 */
+}

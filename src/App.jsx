@@ -5,6 +5,8 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import SmoothScroll from './components/layout/SmoothScroll';
 import LoadingScreen from './components/ui/LoadingScreen';
+import WhatsAppWidget from './components/ui/WhatsAppWidget';
+import ExitIntentPopup from './components/ui/ExitIntentPopup';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -57,6 +59,8 @@ function App() {
           <Navbar />
           <AnimatedRoutes />
           <Footer />
+          <WhatsAppWidget />
+          <ExitIntentPopup />
         </SmoothScroll>
       )}
     </Router>

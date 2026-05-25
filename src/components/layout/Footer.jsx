@@ -113,8 +113,8 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Phone size={14} className="text-gold mt-1 flex-shrink-0" />
-                <a href="tel:+919121498939" className="text-ivory/50 text-sm font-inter hover:text-gold transition-colors">
-                  +91 91214 98939
+                <a href="tel:+919100097900" className="text-ivory/50 text-sm font-inter hover:text-gold transition-colors">
+                  +91 91000 97900 / 70138 77610
                 </a>
               </li>
               <li className="flex items-start gap-3">
@@ -126,8 +126,8 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin size={14} className="text-gold mt-1 flex-shrink-0" />
                 <span className="text-ivory/50 text-sm font-inter">
-                  5th Floor, D Square Building,<br />
-                  Kondapur, Hyderabad
+                  studiosweddingz,<br />
+                  chilkanagar
                 </span>
               </li>
             </ul>

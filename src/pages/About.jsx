@@ -8,10 +8,12 @@ import heroMaternity from '../assets/images/hero-maternity.png';
 import heroWedding from '../assets/images/hero-wedding.png';
 
 const team = [
-  { name: 'Chai', role: 'Founder & Lead Photographer', bio: 'A storyteller at heart with 10+ years of cinematic photography experience.' },
-  { name: 'Priya Sharma', role: 'Creative Director', bio: 'Visionary designer who brings editorial elegance to every session.' },
-  { name: 'Arjun Reddy', role: 'Senior Videographer', bio: 'Cinematic filmmaker with a passion for emotional wedding films.' },
-  { name: 'Sneha Nair', role: 'Newborn Specialist', bio: 'Certified newborn photographer with a gentle, baby-first approach.' },
+  { name: 'Sudhamsh', role: 'Founder', bio: 'A storyteller at heart with a vision for cinematic excellence.' },
+  { name: 'Divya', role: 'Chief Executive & Advisor', bio: 'Guiding the studio with strategic vision and editorial elegance.' },
+  { name: 'Venkat', role: 'Senior Videographer', bio: 'Cinematic filmmaker with a passion for emotional wedding films.' },
+  { name: 'Kishan', role: 'Candid Photographer', bio: 'Capturing unscripted, beautiful moments as they naturally unfold.' },
+  { name: 'Ramesh Kodam', role: 'Senior Photographer & Mentor', bio: 'A master of light and composition, mentoring the next generation of artists.' },
+  { name: 'Venu', role: 'Videographer', bio: 'Expert in capturing dynamic movements and beautiful visual stories.' },
 ];
 
 const achievements = [
@@ -78,7 +80,7 @@ const About = () => {
       <section className="section-padding-y bg-noir">
         <div className="max-container section-padding">
           <SectionHeading subtitle="The Team" title="The Artists Behind The Lens" />
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {team.map((member, i) => (
               <motion.div key={i} variants={fadeUp} className="group text-center">
                 <div className="aspect-[3/4] rounded-sm overflow-hidden mb-4 bg-noir-800 gold-border-hover">

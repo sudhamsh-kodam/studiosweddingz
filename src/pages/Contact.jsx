@@ -93,7 +93,7 @@ const Contact = () => {
             <h2 className="font-playfair text-heading text-ivory mb-2">Get In Touch</h2>
             <p className="text-ivory/50 text-sm font-inter mb-10">Reach out through any channel below.</p>
             <div className="space-y-8">
-              {[{icon:Phone,label:'Phone',text:'+91 91214 98939',href:'tel:+919121498939'},{icon:Mail,label:'Email',text:'hello@studiosweddingz.com',href:'mailto:hello@studiosweddingz.com'},{icon:MapPin,label:'Studio',text:'5th Floor, D Square Building, Kondapur, Hyderabad'}].map(({icon:Icon,label,text,href},i)=>(
+              {[{icon:Phone,label:'Phone',text:'+91 91000 97900 / 70138 77610',href:'tel:+919100097900'},{icon:Mail,label:'Email',text:'hello@studiosweddingz.com',href:'mailto:hello@studiosweddingz.com'},{icon:MapPin,label:'Studio',text:'studiosweddingz, chilkanagar'}].map(({icon:Icon,label,text,href},i)=>(
                 <div key={i} className="flex items-start gap-4 group">
                   <div className="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center"><Icon size={18} className="text-gold"/></div>
                   <div>
@@ -112,15 +112,12 @@ const Contact = () => {
               </div>
             </div>
             <div className="mt-10 aspect-video rounded-sm overflow-hidden border border-ivory/10">
-              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.3!2d78.3!3d17.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTfCsDMwJzAwLjAiTiA3OMKwMTgnMDAuMCJF!5e0!3m2!1sen!2sin!4v1" width="100%" height="100%" style={{border:0,filter:'invert(90%) hue-rotate(180deg) brightness(0.8) contrast(1.2)'}} allowFullScreen loading="lazy" title="Studio Location"/>
+              <iframe src="https://maps.google.com/maps?q=studiosweddingz%20chilkanagar&t=&z=13&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style={{border:0,filter:'invert(90%) hue-rotate(180deg) brightness(0.8) contrast(1.2)'}} allowFullScreen loading="lazy" title="Studio Location"/>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <a href="https://wa.me/919121498939?text=Hi%20StudioSweddingz!" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:scale-110 transition-transform duration-300">
-        <MessageCircle size={24} className="text-white"/>
-      </a>
     </main>
   );
 };

@@ -154,7 +154,7 @@ const Navbar = () => {
               <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-ivory/50 hover:text-gold transition-colors">
                 <Youtube size={20} />
               </a>
-              <a href="tel:+919121498939" className="text-ivory/50 hover:text-gold transition-colors">
+              <a href="tel:+919100097900" className="text-ivory/50 hover:text-gold transition-colors">
                 <Phone size={20} />
               </a>
             </motion.div>
