@@ -21,7 +21,43 @@ const Contact = () => {
     return Object.keys(e).length===0;
   };
 
-  const handleSubmit = (ev) => { ev.preventDefault(); if (validate()) setSubmitted(true); };
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwNBlbR0KOkkYaHgEbUGmT-jk91BU78bQDxx80YhXyjmtvfjybrEYFlT_O5rWkekKk4lA/exec';
+
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
+    if (validate()) {
+      // 1. Send to Google Sheet
+      fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          eventType: form.eventType,
+          date: form.date,
+          message: form.message,
+        }),
+      }).catch(() => {}); // silent fail — don't block user flow
+
+      // 2. Open WhatsApp
+      const msg = [
+        `Hi StudioSweddingz! I'd like to enquire about your photography services.`,
+        ``,
+        `*Name:* ${form.name}`,
+        `*Email:* ${form.email}`,
+        `*Phone:* ${form.phone}`,
+        form.eventType ? `*Event Type:* ${form.eventType}` : null,
+        form.date ? `*Event Date:* ${form.date}` : null,
+        ``,
+        `*Message:*`,
+        form.message,
+      ].filter(l => l !== null).join('\n');
+      window.open(`https://wa.me/919100097900?text=${encodeURIComponent(msg)}`, '_blank');
+      setSubmitted(true);
+    }
+  };
   const handleChange = (f,v) => { setForm(p=>({...p,[f]:v})); if(errors[f]) setErrors(p=>({...p,[f]:''})); };
 
   return (

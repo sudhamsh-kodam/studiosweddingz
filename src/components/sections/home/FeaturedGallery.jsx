@@ -65,7 +65,7 @@ const FeaturedGallery = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="text-center mt-12"
+          className="text-center mt-6"
         >
           <Button to="/portfolio" variant="outline" icon>
             View Full Portfolio

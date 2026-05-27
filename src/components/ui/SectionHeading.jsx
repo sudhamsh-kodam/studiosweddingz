@@ -17,7 +17,7 @@ const SectionHeading = ({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
-      className={`${alignments[align]} ${maxWidth} mb-12 md:mb-16 ${className}`}
+      className={`${alignments[align]} ${maxWidth} mb-6 md:mb-8 ${className}`}
     >
       {subtitle && (
         <motion.p

@@ -32,6 +32,7 @@ const Testimonials = () => {
           <Swiper
             modules={[Autoplay, EffectFade, Pagination]}
             effect="fade"
+            fadeEffect={{ crossFade: true }}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
             pagination={{ clickable: true, bulletActiveClass: 'swiper-pagination-bullet-active !bg-gold !opacity-100', bulletClass: 'swiper-pagination-bullet !bg-ivory/20 !opacity-100 !w-2 !h-2 !mx-1' }}
             loop
@@ -39,7 +40,7 @@ const Testimonials = () => {
           >
             {testimonials.map((t) => (
               <SwiperSlide key={t.id}>
-                <div className="text-center px-4 pb-12">
+                <div className="text-center px-4 pb-8">
                   <Quote size={40} className="text-gold/20 mx-auto mb-6" />
                   <blockquote className="font-cormorant text-xl md:text-2xl lg:text-3xl text-ivory/90 italic leading-relaxed mb-8 max-w-3xl mx-auto">
                     "{t.quote}"
