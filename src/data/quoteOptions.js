@@ -69,19 +69,20 @@ export const addons = [
   { id: 'samedayedit', name: 'Same-Day Edit Video', description: 'A highlight video edited and delivered on the same day', price: 20000, icon: '🎬', applicableTo: ['wedding'] },
   { id: 'extraphotographer', name: 'Extra Photographer', description: 'Additional photographer for more coverage angles', price: 8000, icon: '📷', applicableTo: ['wedding','fashion','traditional','candid','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
   { id: 'rushdelivery', name: 'Rush Delivery', description: 'Get your photos delivered within 2 weeks instead of 4-6', price: 5000, icon: '⚡', applicableTo: ['wedding','maternity','newborn','milestone','fashion','traditional','candid','traditionalVideo','cinematic','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
-  { id: 'pressbook', name: 'Press Book', description: 'Elegant custom-designed coffee table book with premium matte, glossy, feather touch, embossed, silk matte finish press pages', price: 12000, icon: '📚', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
-  { id: 'magnumalbum', name: 'Magnum Album', description: 'Signature ultra-premium handcrafted leather-bound album with lay-flat sheets', price: 25000, icon: '📖', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
+  { id: 'pressbook', name: 'Press Book', description: 'Elegant custom-designed coffee table book with premium matte, glossy, feather touch, embossed, silk matte finish press pages (40 leafs per album)', price: 20000, icon: '📚', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
+  { id: 'magnumalbum', name: 'Magnum Album', description: 'Signature ultra-premium handcrafted leather-bound album with lay-flat sheets (40 leafs per album)', price: 25000, icon: '📖', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
   { id: 'makeup', name: 'Hair & Makeup Artist', description: 'Professional makeup and hair styling for your shoot', price: 7000, icon: '💄', applicableTo: ['maternity','fashion','milestone'] },
   { id: 'videofilm', name: 'Cinematic Film', description: 'A professionally edited 5-8 minute cinematic film', price: 25000, icon: '🎥', applicableTo: ['wedding','candid'] },
 ];
 
 export const weddingEvents = [
   { id: 'engagement', name: 'Engagement', image: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'The official ring ceremony to kick off the wedding journey' },
+  { id: 'combined_haldi', name: 'Combined Haldi', image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Combined haldi celebration for both bride and groom together' },
   { id: 'groom_haldi', name: 'Groom Haldi', image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Vibrant and messy haldi celebrations' },
   { id: 'bride_haldi', name: 'Bride Haldi', image: 'https://images.unsplash.com/photo-1621886292650-520f76c747d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Beautiful turmeric rituals for the bride' },
   { id: 'pellikoduku', name: 'Pellikoduku / Groom Ceremony', image: 'https://images.unsplash.com/photo-1605335123048-18e38d4a5202?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Making of the groom ceremonies' },
   { id: 'pellikuthuru', name: 'Pellikuthuru / Bride Ceremony', image: 'https://images.unsplash.com/photo-1595981267035-7b04d84b52a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Making of the bride ceremonies' },
-  { id: 'wedding', name: 'The Big Day', image: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'The grand Telugu wedding ceremony' },
+  { id: 'wedding', name: 'The Wedding Day', image: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Capturing every moment of your beautiful wedding ceremony' },
   { id: 'reception', name: 'Reception', image: 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Elegant evening reception and dinner' },
   { id: 'prewedding', name: 'Pre-Wedding Shoot', image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Romantic couple portrait session before the wedding' },
   { id: 'mehendi', name: 'Mehendi', image: 'https://images.unsplash.com/photo-1562635398-333eec2edeb7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Intricate henna art and music' },
@@ -91,9 +92,9 @@ export const weddingEvents = [
 ];
 
 export const eventServicesList = [
-  { id: 'traditional_photo', name: 'Traditional Photo', icon: '📷', price: 7500 },
+  { id: 'traditional_photo', name: 'Traditional Photo', icon: '📷', price: 10000 },
   { id: 'candid_photo', name: 'Candid Photo', icon: '📸', price: 15000 },
-  { id: 'traditional_video', name: 'Traditional Video', icon: '🎥', price: 7500 },
+  { id: 'traditional_video', name: 'Traditional Video', icon: '🎥', price: 10000 },
   { id: 'cinematic_video', name: 'Cinematic Video', icon: '🎬', price: 20000 },
   { id: 'drone', name: 'Drone Coverage', icon: '🚁', price: 10000 },
   { id: 'prewedding_photo', name: 'Photography', icon: '📸', price: 20000 },

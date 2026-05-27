@@ -9,6 +9,7 @@ const initialState = {
   eventServices: {},
   selectedAddons: [],
   addonQuantities: {},
+  eventDays: {},
   eventDetails: {
     date: '',
     location: '',
@@ -156,6 +157,13 @@ export const useQuoteBuilder = () => {
     });
   }, []);
 
+  const updateEventDays = useCallback((eventId, days) => {
+    setState((prev) => ({
+      ...prev,
+      eventDays: { ...prev.eventDays, [eventId]: Math.max(1, days) }
+    }));
+  }, []);
+
   const updateAddonQuantity = useCallback((addonId, qty) => {
     setState((prev) => {
       const addonQuantities = { ...prev.addonQuantities, [addonId]: Math.max(0, qty) };
@@ -226,9 +234,10 @@ export const useQuoteBuilder = () => {
       }
     });
     Object.entries(state.eventServices).forEach(([eventId, services]) => {
+      const days = state.eventDays?.[eventId] || 1;
       services.forEach(serviceId => {
         const s = eventServicesList.find(e => e.id === serviceId);
-        if (s) total += s.price;
+        if (s) total += s.price * days;
       });
     });
     state.selectedAddons.forEach((addonId) => {
@@ -239,7 +248,7 @@ export const useQuoteBuilder = () => {
       }
     });
     return total;
-  }, [state.selectedPackages, state.eventServices, state.selectedAddons, state.addonQuantities]);
+  }, [state.selectedPackages, state.eventServices, state.selectedAddons, state.addonQuantities, state.eventDays]);
 
   const canProceed = useMemo(() => {
     switch (state.step) {
@@ -273,12 +282,14 @@ export const useQuoteBuilder = () => {
       }
     });
     Object.entries(state.eventServices).forEach(([eventId, services]) => {
+      const days = state.eventDays?.[eventId] || 1;
       const eventServicesArr = services.map(serviceId => {
         const s = eventServicesList.find(e => e.id === serviceId);
-        return { name: s?.name, price: s?.price };
+        return { name: s?.name, price: (s?.price || 0) * days };
       });
       if (eventServicesArr.length > 0) {
-         items.push({ type: 'event', eventId, name: `Event: ${eventId.replace('_', ' ').toUpperCase()}`, services: eventServicesArr, price: eventServicesArr.reduce((sum, s) => sum + s.price, 0) });
+         const eventName = days > 1 ? `Event: ${eventId.replace('_', ' ').toUpperCase()} (${days} Days)` : `Event: ${eventId.replace('_', ' ').toUpperCase()}`;
+         items.push({ type: 'event', eventId, name: eventName, services: eventServicesArr, price: eventServicesArr.reduce((sum, s) => sum + s.price, 0), days });
       }
     });
     state.selectedAddons.forEach((addonId) => {
@@ -299,7 +310,7 @@ export const useQuoteBuilder = () => {
   return {
     ...state,
     setStep, nextStep, prevStep,
-    toggleService, selectPackage, toggleEvent, toggleEventService, toggleAddon, updateAddonQuantity,
+    toggleService, selectPackage, toggleEvent, toggleEventService, toggleAddon, updateAddonQuantity, updateEventDays,
     updateEventDetails, updateCustomerInfo, captureLead,
     applicableAddons, totalPrice, canProceed,
     resetQuote, getQuoteSummary,

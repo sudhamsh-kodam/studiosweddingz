@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuoteBuilder } from '../hooks/useQuoteBuilder';
 import { quoteServices, packageTiers, addons, weddingEvents, eventServicesList } from '../data/quoteOptions';
@@ -43,6 +43,31 @@ const BuildQuote = () => {
   });
   const [showServicesForCurrent, setShowServicesForCurrent] = useState(false);
 
+  const pageTopRef = useRef(null);
+
+  // Scroll to top of page on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [q.step]);
+
+  // Scroll to top when event index changes within step 2
+  useEffect(() => {
+    if (q.step === 2) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentEventIndex]);
+
+  // Auto-hide header after 2 seconds once user reaches step 2+
+  const [showHeader, setShowHeader] = useState(true);
+  useEffect(() => {
+    if (q.step >= 2) {
+      const timer = setTimeout(() => setShowHeader(false), 2000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowHeader(true);
+    }
+  }, [q.step]);
+
   // Persist stepper position
   useEffect(() => {
     try { sessionStorage.setItem('quoteEventIndex', String(currentEventIndex)); } catch {}
@@ -73,7 +98,16 @@ const BuildQuote = () => {
   const handleSubmit = () => {
     if (q.canProceed) {
       const summary = q.getQuoteSummary();
-      const msg = `Hi StudioSweddingz! Here's my custom quote:\n\n${summary.items.map(i=>`• ${i.name}: ${formatPrice(i.price)}`).join('\n')}\n\nTotal: ${formatPrice(summary.total)}\n\nName: ${summary.customerInfo.name}\nEmail: ${summary.customerInfo.email}\nPhone: ${summary.customerInfo.phone}\nDate: ${summary.eventDetails.date}\nLocation: ${summary.eventDetails.location}`;
+      const locStr = summary.eventDetails.isMultipleLocations && summary.eventDetails.locationSecondary
+        ? `${summary.eventDetails.location} & ${summary.eventDetails.locationSecondary}`
+        : summary.eventDetails.location;
+      let msg = `Hi StudioSweddingz! Here's my custom quote:\n\n${summary.items.map(i=>`• ${i.name}: ${formatPrice(i.price)}`).join('\n')}\n\nTotal: ${formatPrice(summary.total)}\n\nName: ${summary.customerInfo.name}\nEmail: ${summary.customerInfo.email}\nPhone: ${summary.customerInfo.phone}\nDate: ${summary.eventDetails.date}\nLocation: ${locStr}`;
+      if (summary.eventDetails.referralSource) {
+        msg += `\nReferral: ${summary.eventDetails.referralSource}`;
+        if (summary.eventDetails.referralSource === 'Reference' && summary.eventDetails.referrerName) {
+          msg += ` (${summary.eventDetails.referrerName})`;
+        }
+      }
       window.open(`https://wa.me/919100097900?text=${encodeURIComponent(msg)}`, '_blank');
       setSubmitted(true);
     }
@@ -158,13 +192,25 @@ const BuildQuote = () => {
       </AnimatePresence>
 
       <div className="max-container section-padding">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <p className="font-cormorant text-gold text-sm uppercase tracking-[0.4em] mb-4">Custom Quote</p>
-          <h1 className="font-playfair text-display text-ivory mb-2">Build Your Quote</h1>
-          <p className="text-ivory/50 text-sm font-inter max-w-xl mx-auto">Create a personalized photography package tailored to your needs.</p>
-        </motion.div>
+      <div ref={pageTopRef} />
 
-        <StepIndicator step={q.step} />
+        <AnimatePresence>
+          {showHeader && (
+            <motion.div
+              initial={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+                <p className="font-cormorant text-gold text-sm uppercase tracking-[0.4em] mb-4">Custom Quote</p>
+                <h1 className="font-playfair text-display text-ivory mb-2">Build Your Quote</h1>
+                <p className="text-ivory/50 text-sm font-inter max-w-xl mx-auto">Create a personalized photography package tailored to your needs.</p>
+              </motion.div>
+
+              <StepIndicator step={q.step} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {submitted ? (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-20 max-w-lg mx-auto">
@@ -192,13 +238,13 @@ const BuildQuote = () => {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                           {[
-                            { name: 'Traditional Photography', price: 7500, icon: '📷', desc: 'Classic, timeless event portraits ensuring every ritual and guest is beautifully documented.' },
-                            { name: 'Traditional Videography', price: 7500, icon: '🎥', desc: 'Full-length, classic documentation of your entire event from start to finish.' },
+                            { name: 'Traditional Photography', price: 10000, icon: '📷', desc: 'Classic, timeless event portraits ensuring every ritual and guest is beautifully documented.' },
+                            { name: 'Traditional Videography', price: 10000, icon: '🎥', desc: 'Full-length, classic documentation of your entire event from start to finish.' },
                             { name: 'Candid Photography', price: 15000, icon: '📸', desc: 'Unposed, natural storytelling that captures raw emotions and fleeting moments.' },
                             { name: 'Cinematic Videography', price: 20000, icon: '🎬', desc: 'High-end, story-driven cinematic highlight films with professional audio and grading.' },
-                            { name: 'Drone Coverage', price: 15000, icon: '🚁', desc: 'Breathtaking aerial shots of your venue, giving a grand perspective to your celebrations.' },
-                            { name: 'Live Streaming', price: 15000, icon: '📡', desc: 'High-quality multi-camera internet broadcast so distant loved ones can join live.' },
-                            { name: 'LED Screen', price: 20000, icon: '📺', desc: 'Large dynamic display walls for live event feeds, photo montages, and visuals.' },
+                            { name: 'Drone Coverage', price: 10000, icon: '🚁', desc: 'Breathtaking aerial shots of your venue, giving a grand perspective to your celebrations.' },
+                            { name: 'Live Streaming', price: 10000, icon: '📡', desc: 'High-quality multi-camera internet broadcast so distant loved ones can join live.' },
+                            { name: 'LED Screen', price: 15000, icon: '📺', desc: 'Large dynamic display walls for live event feeds, photo montages, and visuals.' },
                           ].map((item, idx) => (
                             <motion.div 
                               key={idx} 
@@ -620,24 +666,78 @@ const BuildQuote = () => {
                       <h2 className="font-playfair text-heading text-ivory mb-6">Additional Event Details</h2>
                       <div className="space-y-6 max-w-lg">
                         <div>
-                          <label className="luxury-label"><MapPin size={12} className="inline mr-1"/> Location *</label>
-                          <input type="text" value={q.eventDetails.location} onChange={(e) => q.updateEventDetails('location', e.target.value)} className="luxury-input" placeholder="City / Venue"/>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="luxury-label mb-0"><MapPin size={12} className="inline mr-1"/> Location *</label>
+                            <label className="flex items-center gap-1.5 cursor-pointer text-xs text-gold/80 hover:text-gold font-inter select-none">
+                              <input 
+                                type="checkbox" 
+                                checked={q.eventDetails.isMultipleLocations || false} 
+                                onChange={(e) => {
+                                  q.updateEventDetails('isMultipleLocations', e.target.checked);
+                                  if (!e.target.checked) {
+                                    q.updateEventDetails('locationSecondary', '');
+                                  }
+                                }}
+                                className="accent-gold rounded-sm"
+                              />
+                              Multiple locations?
+                            </label>
+                          </div>
+                          
+                          {!q.eventDetails.isMultipleLocations ? (
+                            <input 
+                              type="text" 
+                              value={q.eventDetails.location} 
+                              onChange={(e) => q.updateEventDetails('location', e.target.value)} 
+                              className="luxury-input" 
+                              placeholder="City / Venue"
+                            />
+                          ) : (
+                            <div className="space-y-3">
+                              <input 
+                                type="text" 
+                                value={q.eventDetails.location} 
+                                onChange={(e) => q.updateEventDetails('location', e.target.value)} 
+                                className="luxury-input" 
+                                placeholder="Groom's Side Location (e.g., Warangal)"
+                              />
+                              <input 
+                                type="text" 
+                                value={q.eventDetails.locationSecondary || ''} 
+                                onChange={(e) => q.updateEventDetails('locationSecondary', e.target.value)} 
+                                className="luxury-input" 
+                                placeholder="Bride's Side Location (e.g., Hyderabad)"
+                              />
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <label className="luxury-label">Number of Days</label>
-                          <input type="number" min="1" max="10" value={q.eventDetails.numberOfDays} onChange={(e) => q.updateEventDetails('numberOfDays', parseInt(e.target.value)||1)} className="luxury-input bg-noir"/>
-                        </div>
+
                         <div>
                           <label className="luxury-label"><MessageSquare size={12} className="inline mr-1"/> Special Requests</label>
                           <textarea value={q.eventDetails.specialRequests} onChange={(e) => q.updateEventDetails('specialRequests', e.target.value)} className="luxury-input min-h-[100px] resize-none" placeholder="Anything specific you'd like us to know..."/>
                         </div>
                         <div>
                           <label className="luxury-label">How did you hear about us?</label>
-                          <select value={q.eventDetails.referralSource} onChange={(e) => q.updateEventDetails('referralSource', e.target.value)} className="luxury-input bg-noir">
+                          <select value={q.eventDetails.referralSource} onChange={(e) => { q.updateEventDetails('referralSource', e.target.value); if(e.target.value !== 'Reference') q.updateEventDetails('referrerName', ''); }} className="luxury-input bg-noir">
                             <option value="">Select</option>
-                            {['Instagram','YouTube','Google','Word of Mouth','Wedding Planner','Other'].map(o=><option key={o} value={o}>{o}</option>)}
+                            {['Instagram','Facebook','YouTube','Google','Word of Mouth','Wedding Planner','Reference','Other'].map(o=><option key={o} value={o}>{o}</option>)}
                           </select>
                         </div>
+                        {q.eventDetails.referralSource === 'Reference' && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <label className="luxury-label">Referrer Name</label>
+                            <input 
+                              type="text" 
+                              value={q.eventDetails.referrerName || ''} 
+                              onChange={(e) => q.updateEventDetails('referrerName', e.target.value)} 
+                              className="luxury-input" 
+                              placeholder="Who referred you?"
+                            />
+                          </motion.div>
+                        )}
                       </div>
                     </div>
                   )}
