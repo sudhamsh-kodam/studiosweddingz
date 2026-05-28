@@ -9,7 +9,6 @@ import heroWedding from '../assets/images/hero-wedding.png';
 
 const team = [
   { name: 'Sudhamsh', role: 'Founder', bio: 'A storyteller at heart with a vision for cinematic excellence.' },
-  { name: 'Divya', role: 'Chief Executive & Advisor', bio: 'Guiding the studio with strategic vision and editorial elegance.' },
   { name: 'Venkat', role: 'Senior Videographer', bio: 'Cinematic filmmaker with a passion for emotional wedding films.' },
   { name: 'Kishan', role: 'Candid Photographer', bio: 'Capturing unscripted, beautiful moments as they naturally unfold.' },
   { name: 'Ramesh Kodam', role: 'Senior Photographer & Mentor', bio: 'A master of light and composition, mentoring the next generation of artists.' },

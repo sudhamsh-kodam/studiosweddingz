@@ -5,11 +5,67 @@ import Button from '../../ui/Button';
 import heroWedding from '../../../assets/images/hero-wedding.png';
 import heroMaternity from '../../../assets/images/hero-maternity.png';
 import heroNewborn from '../../../assets/images/hero-newborn.png';
+import heroBigFatIndian from '../../../assets/images/hero-big-fat-indian.png';
+import heroSouthIndian from '../../../assets/images/hero-south-indian.png';
+import heroSangeet from '../../../assets/images/hero-sangeet.png';
+import heroHaldi from '../../../assets/images/hero-haldi.png';
+import heroReception from '../../../assets/images/hero-reception.png';
+import heroEngagement from '../../../assets/images/hero-engagement.png';
 
 const slides = [
-  { image: heroWedding, subtitle: 'Luxury Wedding Photography', title: 'Where Every Moment Becomes Eternal' },
-  { image: heroMaternity, subtitle: 'Maternity & Newborn', title: 'Celebrating Life\'s Most Beautiful Chapters' },
-  { image: heroNewborn, subtitle: 'Cinematic Storytelling', title: 'Your Story Deserves To Be Told Beautifully' },
+  {
+    image: heroEngagement,
+    subtitle: 'The Engagement Ceremony',
+    title: 'The Promise That Began It All',
+    description: 'Two souls, one ring, a thousand emotions — the beautiful beginning of your forever, captured with grace and tenderness.',
+  },
+  {
+    image: heroWedding,
+    subtitle: 'Luxury Wedding Photography',
+    title: 'Where Every Moment Becomes Eternal',
+    description: 'From the first glance to the last dance — we craft cinematic wedding stories that live forever in heart and frame.',
+  },
+  {
+    image: heroBigFatIndian,
+    subtitle: 'The Grand Indian Celebration',
+    title: 'Magnificence Beyond Measure',
+    description: 'Where opulence meets tradition — capturing the grandeur of a Big Fat Indian Wedding in all its regal splendour.',
+  },
+  {
+    image: heroSouthIndian,
+    subtitle: 'Traditional South Indian Weddings',
+    title: 'Sacred Rituals, Timeless Elegance',
+    description: 'Honouring centuries of culture and devotion — every ritual documented with reverence, artistry, and an eye for the eternal.',
+  },
+  {
+    image: heroSangeet,
+    subtitle: 'The Sangeet Ceremony',
+    title: 'Where Music Fills Every Heart',
+    description: 'An evening of unbridled joy, laughter, and dance — the night when two families become one, beautifully remembered.',
+  },
+  {
+    image: heroHaldi,
+    subtitle: 'The Haldi Ceremony',
+    title: 'Bathed in Golden Blessings',
+    description: 'The most intimate of all rituals — surrounded by love, laughter, and marigolds, as family hands bestow their blessings.',
+  },
+  {
+    image: heroReception,
+    subtitle: 'The Wedding Reception',
+    title: 'An Evening Draped in Luxury',
+    description: 'The grandest entrance, the warmest embraces, the finest moments — your reception night immortalised in cinematic elegance.',
+  }, {
+    image: heroMaternity,
+    subtitle: 'Maternity & Newborn',
+    title: 'Celebrating Life\'s Most Beautiful Chapters',
+    description: 'The miracle of new life, tenderly preserved — portraits that carry the warmth of your love for generations to come.',
+  },
+  {
+    image: heroNewborn,
+    subtitle: 'Cinematic Storytelling',
+    title: 'Your Story Deserves To Be Told Beautifully',
+    description: 'Every frame a poem, every image a memory — because the stories worth living are the ones worth remembering.',
+  },
 ];
 
 const HeroSection = () => {
@@ -79,6 +135,16 @@ const HeroSection = () => {
               {slide.title}
             </motion.h1>
 
+            {/* Description */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="font-cormorant text-ivory/70 text-lg md:text-xl italic max-w-2xl mx-auto mb-10 leading-relaxed"
+            >
+              {slide.description}
+            </motion.p>
+
             {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -102,9 +168,8 @@ const HeroSection = () => {
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}
-              className={`h-[2px] transition-all duration-600 ${
-                i === currentSlide ? 'w-12 bg-gold' : 'w-6 bg-ivory/30'
-              }`}
+              className={`h-[2px] transition-all duration-600 ${i === currentSlide ? 'w-12 bg-gold' : 'w-6 bg-ivory/30'
+                }`}
             />
           ))}
         </div>
