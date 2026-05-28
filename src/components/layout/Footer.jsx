@@ -17,9 +17,11 @@ const footerLinks = [
 
 const serviceLinks = [
   { name: 'Wedding Photography', path: '/services#wedding' },
-  { name: 'Maternity Shoots', path: '/services#maternity' },
-  { name: 'Newborn Photography', path: '/services#newborn' },
-  { name: 'Baby Milestones', path: '/services#milestone' },
+  { name: 'Candid Photography', path: '/services#candid' },
+  { name: 'Traditional Photography', path: '/services#traditional' },
+  { name: 'Cinematic Videography', path: '/services#cinematic' },
+  { name: 'Aerial Photography & Videography', path: '/services#aerial' },
+  { name: 'Traditional Videography', path: '/services#trad-video' },
   { name: 'Fashion Portraits', path: '/services#fashion' },
 ];
 

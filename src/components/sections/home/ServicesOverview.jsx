@@ -4,16 +4,20 @@ import { ArrowRight } from 'lucide-react';
 import { fadeUp, staggerContainer } from '../../../utils/animations';
 import SectionHeading from '../../ui/SectionHeading';
 import heroWedding from '../../../assets/images/hero-wedding.png';
-import heroMaternity from '../../../assets/images/hero-maternity.png';
-import heroNewborn from '../../../assets/images/hero-newborn.png';
-import heroKids from '../../../assets/images/hero-kids.png';
+import heroCandid from '../../../assets/images/hero-candid.png';
+import heroTraditional from '../../../assets/images/hero-fashion.png';
+import heroCinematic from '../../../assets/images/hero-cinematic.png';
+import heroAerial from '../../../assets/images/hero-aerial.png';
+import heroTradVideo from '../../../assets/images/hero-traditional-video.png';
 import heroFashion from '../../../assets/images/hero-fashion.png';
 
 const servicesList = [
   { id: 'wedding', title: 'Wedding Photography', desc: 'Cinematic wedding stories told with artistry and emotion.', image: heroWedding },
-  { id: 'maternity', title: 'Maternity Shoots', desc: 'Celebrating the radiant glow of new life.', image: heroMaternity },
-  { id: 'newborn', title: 'Newborn Photography', desc: 'Gentle, artistic portraits of your tiny miracle.', image: heroNewborn },
-  { id: 'milestone', title: 'Baby Milestones', desc: 'Every first is a masterpiece worth capturing.', image: heroKids },
+  { id: 'candid', title: 'Candid Photography', desc: 'Real emotions, unscripted moments — your story as it unfolds.', image: heroCandid },
+  { id: 'traditional', title: 'Traditional Photography', desc: 'Classic, posed portraits that families cherish for generations.', image: heroTraditional },
+  { id: 'cinematic', title: 'Cinematic Videography', desc: 'Your love story as a breathtaking motion picture.', image: heroCinematic },
+  { id: 'aerial', title: 'Aerial Photography & Videography', desc: 'Sweeping drone perspectives that reveal the grandeur of your day.', image: heroAerial },
+  { id: 'trad-video', title: 'Traditional Videography', desc: 'Complete documentation of every ritual, every moment.', image: heroTradVideo },
   { id: 'fashion', title: 'Fashion Portraits', desc: 'Editorial excellence meets personal artistry.', image: heroFashion },
 ];
 
@@ -24,7 +28,7 @@ const ServicesOverview = () => {
         <SectionHeading
           subtitle="What We Do"
           title="Our Services"
-          description="From weddings to newborns, every service is crafted as a luxury experience."
+          description="From candid moments to cinematic films, every service is crafted as a luxury experience."
         />
 
         <motion.div
@@ -32,7 +36,7 @@ const ServicesOverview = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           {servicesList.map((service, i) => (
             <motion.div key={service.id} variants={fadeUp}>
