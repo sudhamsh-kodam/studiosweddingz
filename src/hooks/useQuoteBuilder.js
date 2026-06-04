@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { packageTiers, addons, eventServicesList } from '../data/quoteOptions';
+import { packageTiers, addons, eventServicesList, weddingEvents } from '../data/quoteOptions';
 
 const initialState = {
   step: 1,
@@ -10,6 +10,7 @@ const initialState = {
   selectedAddons: [],
   addonQuantities: {},
   eventDays: {},
+  eventDates: {},
   eventDetails: {
     date: '',
     location: '',
@@ -23,6 +24,7 @@ const initialState = {
     phone: '',
   },
   leadCaptured: false,
+  budgetRange: null,
 };
 
 const SESSION_KEY = 'quoteBuilderState';
@@ -38,6 +40,7 @@ const getInitialState = () => {
         ...parsed,
         eventDetails: { ...initialState.eventDetails, ...parsed.eventDetails },
         customerInfo: { ...initialState.customerInfo, ...parsed.customerInfo },
+        eventDates: { ...initialState.eventDates, ...parsed.eventDates },
       };
     }
   } catch (e) {
@@ -97,11 +100,13 @@ export const useQuoteBuilder = () => {
         : [...prev.selectedEvents, eventId];
         
       const eventServices = { ...prev.eventServices };
+      const eventDates = { ...prev.eventDates };
       if (isSelected) {
         delete eventServices[eventId];
+        delete eventDates[eventId];
       }
       
-      return { ...prev, selectedEvents, eventServices };
+      return { ...prev, selectedEvents, eventServices, eventDates };
     });
   }, []);
 
@@ -128,7 +133,7 @@ export const useQuoteBuilder = () => {
       } else if (updatedEventSelections.length === 0 && selectedEvents.includes(eventId)) {
         selectedEvents = selectedEvents.filter(id => id !== eventId);
       }
-        
+      
       return {
         ...prev,
         selectedEvents,
@@ -161,6 +166,13 @@ export const useQuoteBuilder = () => {
     setState((prev) => ({
       ...prev,
       eventDays: { ...prev.eventDays, [eventId]: Math.max(1, days) }
+    }));
+  }, []);
+
+  const updateEventDate = useCallback((eventId, date) => {
+    setState((prev) => ({
+      ...prev,
+      eventDates: { ...prev.eventDates, [eventId]: date }
     }));
   }, []);
 
@@ -234,7 +246,8 @@ export const useQuoteBuilder = () => {
       }
     });
     Object.entries(state.eventServices).forEach(([eventId, services]) => {
-      const days = state.eventDays?.[eventId] || 1;
+      const eventObj = weddingEvents.find(e => e.id === eventId);
+      const days = eventObj?.multiDay ? (state.eventDays?.[eventId] || 1) : 1;
       services.forEach(serviceId => {
         const s = eventServicesList.find(e => e.id === serviceId);
         if (s) total += s.price * days;
@@ -282,14 +295,25 @@ export const useQuoteBuilder = () => {
       }
     });
     Object.entries(state.eventServices).forEach(([eventId, services]) => {
-      const days = state.eventDays?.[eventId] || 1;
+      const eventObj = weddingEvents.find(e => e.id === eventId);
+      const isMulti = eventObj?.multiDay;
+      const days = isMulti ? (state.eventDays?.[eventId] || 1) : 1;
       const eventServicesArr = services.map(serviceId => {
         const s = eventServicesList.find(e => e.id === serviceId);
         return { name: s?.name, price: (s?.price || 0) * days };
       });
       if (eventServicesArr.length > 0) {
          const eventName = days > 1 ? `Event: ${eventId.replace('_', ' ').toUpperCase()} (${days} Days)` : `Event: ${eventId.replace('_', ' ').toUpperCase()}`;
-         items.push({ type: 'event', eventId, name: eventName, services: eventServicesArr, price: eventServicesArr.reduce((sum, s) => sum + s.price, 0), days });
+         const eventDate = state.eventDates?.[eventId] || '';
+         items.push({ 
+           type: 'event', 
+           eventId, 
+           name: eventName, 
+           services: eventServicesArr, 
+           price: eventServicesArr.reduce((sum, s) => sum + s.price, 0), 
+           days,
+           date: eventDate
+         });
       }
     });
     state.selectedAddons.forEach((addonId) => {
@@ -307,11 +331,15 @@ export const useQuoteBuilder = () => {
     return { items, total: totalPrice, eventDetails: state.eventDetails, customerInfo: state.customerInfo };
   }, [state, totalPrice]);
 
+  const setBudgetRange = useCallback((range) => {
+    setState((prev) => ({ ...prev, budgetRange: range }));
+  }, []);
+
   return {
     ...state,
     setStep, nextStep, prevStep,
     toggleService, selectPackage, toggleEvent, toggleEventService, toggleAddon, updateAddonQuantity, updateEventDays,
-    updateEventDetails, updateCustomerInfo, captureLead,
+    updateEventDetails, updateCustomerInfo, captureLead, setBudgetRange, updateEventDate,
     applicableAddons, totalPrice, canProceed,
     resetQuote, getQuoteSummary,
   };

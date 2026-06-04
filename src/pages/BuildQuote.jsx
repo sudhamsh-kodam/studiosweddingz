@@ -1,16 +1,27 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuoteBuilder } from '../hooks/useQuoteBuilder';
 import { quoteServices, packageTiers, addons, weddingEvents, eventServicesList } from '../data/quoteOptions';
-import { Check, ChevronRight, ChevronLeft, Sparkles, ArrowRight, Calendar, MapPin, MessageSquare, X, User, Phone } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Sparkles, ArrowRight, Calendar, MapPin, MessageSquare, X, User, Phone, Minus, Plus, IndianRupee, Clock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import GoldDivider from '../components/ui/GoldDivider';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { jsPDF } from 'jspdf';
 
 const stepNames = ['Select Services', 'Choose Event', 'Add Extras', 'Event Details', 'Review & Submit'];
 
 const formatPrice = (p) => `₹${p.toLocaleString('en-IN')}`;
+
+const formatDateDisplay = (dateStr) => {
+  if (!dateStr) return 'Select Date';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const [year, month, day] = parts;
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthIdx = parseInt(month, 10) - 1;
+  return `${day} ${months[monthIdx] || month} ${year}`;
+};
 
 const StepIndicator = ({ step }) => (
   <div className="flex items-center justify-center gap-2 mb-12">
@@ -28,6 +39,304 @@ const StepIndicator = ({ step }) => (
   </div>
 );
 
+const generateQuotationPDF = (summary, budgetRange) => {
+  let ResolvedjsPDF = jsPDF;
+  if (ResolvedjsPDF && ResolvedjsPDF.jsPDF) {
+    ResolvedjsPDF = ResolvedjsPDF.jsPDF;
+  } else if (!ResolvedjsPDF && window.jsPDF) {
+    ResolvedjsPDF = window.jsPDF;
+  }
+
+  if (!ResolvedjsPDF || typeof ResolvedjsPDF !== 'function') {
+    throw new Error("jsPDF constructor could not be resolved. Type of ResolvedjsPDF: " + typeof ResolvedjsPDF + ". Value of jsPDF import: " + String(jsPDF));
+  }
+
+  const doc = new ResolvedjsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 20;
+  const contentWidth = pageWidth - (margin * 2);
+
+  // Colors matching site theme
+  const cGold = [201, 169, 110]; // #C9A96E
+  const cNoir = [17, 17, 17];    // #111111
+  const cGray = [102, 102, 102];  // #666666
+  const cLightGray = [248, 248, 248];
+  const cIvoryBg = [253, 251, 247]; // #FDFBF7
+
+  let y = 25;
+
+  const checkPageBreak = (neededHeight) => {
+    if (y + neededHeight > 265) {
+      doc.addPage();
+      y = 25;
+      
+      // Header on new pages
+      doc.setFont("times", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...cNoir);
+      doc.text("STUDIOSWEDDINGZ", margin, 15);
+      
+      doc.setDrawColor(...cGold);
+      doc.setLineWidth(0.3);
+      doc.line(margin, 17, pageWidth - margin, 17);
+    }
+  };
+
+  // --- DRAW PAGE 1 HEADER ---
+  doc.setFont("times", "bold");
+  doc.setFontSize(28);
+  doc.setTextColor(...cNoir);
+  doc.text("STUDIOSWEDDINGZ", pageWidth / 2, y, { align: "center" });
+  
+  y += 6;
+  doc.setFont("times", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(...cGold);
+  doc.text("PREMIUM WEDDING PHOTOGRAPHY & FILMS", pageWidth / 2, y, { align: "center" });
+
+  y += 5;
+  // Double accent lines
+  doc.setDrawColor(...cGold);
+  doc.setLineWidth(0.6);
+  doc.line(margin, y, pageWidth - margin, y);
+  
+  y += 1.5;
+  doc.setDrawColor(...cNoir);
+  doc.setLineWidth(0.2);
+  doc.line(margin, y, pageWidth - margin, y);
+
+  y += 10;
+
+  // Title of document
+  doc.setFont("times", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(...cNoir);
+  doc.text("CUSTOM QUOTATION PROPOSAL", margin, y);
+
+  // Quote info on the right
+  const today = new Date();
+  const dateString = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const validUntil = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const validString = validUntil.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const quoteRef = `SW-${today.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...cGray);
+  doc.text(`Reference: ${quoteRef}`, pageWidth - margin, y - 4, { align: "right" });
+  doc.text(`Date: ${dateString}`, pageWidth - margin, y, { align: "right" });
+  doc.text(`Valid Until: ${validString}`, pageWidth - margin, y + 4, { align: "right" });
+
+  y += 12;
+
+  // --- CLIENT DETAILS SECTION ---
+  doc.setFillColor(...cIvoryBg);
+  doc.setDrawColor(...cGold);
+  doc.setLineWidth(0.25);
+  doc.roundedRect(margin, y, contentWidth, 32, 2, 2, 'DF');
+
+  doc.setFont("times", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...cNoir);
+  doc.text("CLIENT INFORMATION", margin + 6, y + 6);
+
+  // Left Column
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...cGray);
+  doc.text("Client Name:", margin + 6, y + 13);
+  doc.text("WhatsApp:", margin + 6, y + 19);
+  doc.text("Email ID:", margin + 6, y + 25);
+
+  doc.setTextColor(...cNoir);
+  doc.setFont("helvetica", "bold");
+  doc.text(summary?.customerInfo?.name || "N/A", margin + 28, y + 13);
+  doc.text(summary?.customerInfo?.phone || "N/A", margin + 28, y + 19);
+  doc.text(summary?.customerInfo?.email || "N/A", margin + 28, y + 25);
+
+  // Right Column
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...cGray);
+  doc.text("Wedding Date:", margin + 95, y + 13);
+  doc.text("Event Location:", margin + 95, y + 19);
+  doc.text("Target Budget:", margin + 95, y + 25);
+
+  const budgetLabels = { 
+    under_1l: 'Under ₹1 Lakh', 
+    '1l_2l': '₹1 – 2 Lakhs', 
+    '2l_4l': '₹2 – 4 Lakhs', 
+    '4l_plus': '₹4 Lakhs+', 
+    not_sure: 'Not Sure Yet',
+    skipped: 'N/A'
+  };
+  const budgetText = budgetLabels[budgetRange] || 'N/A';
+
+  doc.setTextColor(...cNoir);
+  doc.setFont("helvetica", "bold");
+  doc.text(summary?.eventDetails?.date ? formatDateDisplay(summary.eventDetails.date) : "N/A", margin + 122, y + 13);
+  
+  const locStr = (summary?.eventDetails?.isMultipleLocations && summary?.eventDetails?.locationSecondary)
+    ? `${summary?.eventDetails?.location} & ${summary?.eventDetails?.locationSecondary}`
+    : (summary?.eventDetails?.location || "N/A");
+  
+  const truncatedLoc = (locStr && locStr.length > 25) ? locStr.substring(0, 23) + "..." : (locStr || "N/A");
+  doc.text(truncatedLoc, margin + 122, y + 19);
+  doc.text(budgetText, margin + 122, y + 25);
+
+  y += 42;
+
+  // --- QUOTATION DETAILS TABLE ---
+  doc.setFont("times", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...cNoir);
+  doc.text("QUOTATION BREAKDOWN", margin, y);
+
+  y += 4;
+  // Table Header
+  doc.setFillColor(...cNoir);
+  doc.rect(margin, y, contentWidth, 8, 'F');
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text("SELECTED EVENTS & SERVICES", margin + 4, y + 5.5);
+  doc.text("DETAILS / DATE", margin + 90, y + 5.5);
+  doc.text("ESTIMATED PRICE", pageWidth - margin - 4, y + 5.5, { align: "right" });
+
+  y += 8;
+
+  // Table Rows
+  const items = summary?.items || [];
+  items.forEach((item, idx) => {
+    let neededHeight = 12;
+    if (item.type === 'event' && item.services && item.services.length > 0) {
+      neededHeight += item.services.length * 4.5;
+    }
+    checkPageBreak(neededHeight);
+
+    // Zebra striping
+    if (idx % 2 === 1) {
+      doc.setFillColor(...cLightGray);
+      doc.rect(margin, y, contentWidth, neededHeight, 'F');
+    }
+
+    // Row bottom border
+    doc.setDrawColor(225, 225, 225);
+    doc.setLineWidth(0.15);
+    doc.line(margin, y + neededHeight, pageWidth - margin, y + neededHeight);
+
+    // Event/Addon Title
+    doc.setTextColor(...cNoir);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    const titleName = item.name ? (item.name.charAt(0).toUpperCase() + item.name.slice(1)) : 'Item';
+    doc.text(titleName, margin + 4, y + 6);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    
+    if (item.type === 'event') {
+      const dateText = item.date ? formatDateDisplay(item.date) : "N/A";
+      doc.text(`Date: ${dateText}`, margin + 90, y + 6);
+      
+      if (item.services && item.services.length > 0) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...cGray);
+        item.services.forEach((srv, srvIdx) => {
+          doc.text(`• ${srv?.name || ''}`, margin + 6, y + 11.5 + (srvIdx * 4.5));
+        });
+      }
+    } else {
+      doc.setTextColor(...cGray);
+      doc.text("Service Add-on", margin + 90, y + 6);
+    }
+
+    // Row Price
+    doc.setTextColor(...cNoir);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.text(formatPrice(item.price || 0), pageWidth - margin - 4, y + 6, { align: "right" });
+
+    y += neededHeight;
+  });
+
+  y += 10;
+  
+  checkPageBreak(35);
+
+  // --- TOTAL PRICING SECTION ---
+  const boxWidth = 80;
+  const boxHeight = 22;
+  const boxX = pageWidth - margin - boxWidth;
+
+  doc.setFillColor(...cIvoryBg);
+  doc.setDrawColor(...cGold);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(boxX, y, boxWidth, boxHeight, 1.5, 1.5, 'DF');
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...cGray);
+  doc.text("Estimated Total:", boxX + 6, y + 7.5);
+
+  doc.setFont("times", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(...cGold);
+  doc.text(formatPrice(summary?.total || 0), boxX + 6, y + 15.5);
+
+  y += boxHeight + 12;
+
+  checkPageBreak(35);
+
+  // --- TERMS & DISCLAIMER ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...cNoir);
+  doc.text("Important Notes:", margin, y);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...cGray);
+  doc.text("1. This quotation is indicative based on customer selections. Final prices are subject to event timeline details.", margin, y + 4.5);
+  doc.text("2. Event dates are subject to booking slot availability. Secure your date with a retainer fee.", margin, y + 8.5);
+  doc.text("3. Standard delivery timeline for edited photographs is 4-6 weeks unless rush delivery is purchased.", margin, y + 12.5);
+
+  y += 24;
+
+  // --- FOOTER NOTE ---
+  doc.setFont("times", "italic");
+  doc.setFontSize(10);
+  doc.setTextColor(...cGold);
+  doc.text("Thank you for considering StudiosWeddingz to tell your beautiful story.", pageWidth / 2, y, { align: "center" });
+
+  y += 5.5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...cGray);
+  doc.text("info@studiosweddingz.com  |  +91 91000 97900  |  studiosweddingz.com", pageWidth / 2, y, { align: "center" });
+
+  // Add Page Numbers
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...cGray);
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 12, { align: "right" });
+  }
+
+  // Save the PDF file
+  const clientName = summary?.customerInfo?.name ? summary.customerInfo.name.replace(/\s+/g, '_') : 'Client';
+  doc.save(`StudiosWeddingz_Quotation_${clientName}.pdf`);
+};
+
 const BuildQuote = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -42,6 +351,37 @@ const BuildQuote = () => {
     try { return parseInt(sessionStorage.getItem('quoteEventIndex') || '0', 10); } catch { return 0; }
   });
   const [showServicesForCurrent, setShowServicesForCurrent] = useState(false);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+
+  const budgetRanges = [
+    { id: 'under_1l', label: 'Under ₹1 Lakh', range: '₹50K – ₹1L', emoji: '💫', description: 'Intimate celebrations with essential coverage', gradient: 'from-amber-900/40 to-yellow-900/30' },
+    { id: '1l_2l', label: '₹1 – 2 Lakhs', range: '₹1L – ₹2L', emoji: '✨', description: 'Complete multi-event wedding coverage', gradient: 'from-yellow-800/40 to-amber-700/30' },
+    { id: '2l_4l', label: '₹2 – 4 Lakhs', range: '₹2L – ₹4L', emoji: '🌟', description: 'Premium cinematic experience with albums', gradient: 'from-amber-700/40 to-yellow-600/20' },
+    { id: '4l_plus', label: '₹4 Lakhs+', range: '₹4L+', emoji: '👑', description: 'Luxury destination wedding production', gradient: 'from-yellow-600/30 to-amber-500/20' },
+    { id: 'not_sure', label: 'Not Sure Yet', range: 'Flexible', emoji: '🤔', description: 'Help me figure out what fits best', gradient: 'from-ivory/5 to-ivory/3' },
+  ];
+
+  const handleWeddingNextStep = useCallback(() => {
+    if (q.selectedServices.includes('wedding') && !q.budgetRange) {
+      setShowBudgetModal(true);
+    } else {
+      q.nextStep();
+    }
+  }, [q]);
+
+  const handleBudgetSelect = useCallback((rangeId) => {
+    q.setBudgetRange(rangeId);
+    setTimeout(() => {
+      setShowBudgetModal(false);
+      q.nextStep();
+    }, 600);
+  }, [q]);
+
+  const handleBudgetSkip = useCallback(() => {
+    q.setBudgetRange('skipped');
+    setShowBudgetModal(false);
+    q.nextStep();
+  }, [q]);
 
   const pageTopRef = useRef(null);
 
@@ -75,6 +415,7 @@ const BuildQuote = () => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowDate = tomorrow.toISOString().split('T')[0];
+  const todayDate = new Date().toISOString().split('T')[0];
 
   const validateLead = () => {
     const e = {};
@@ -101,13 +442,31 @@ const BuildQuote = () => {
       const locStr = summary.eventDetails.isMultipleLocations && summary.eventDetails.locationSecondary
         ? `${summary.eventDetails.location} & ${summary.eventDetails.locationSecondary}`
         : summary.eventDetails.location;
-      let msg = `Hi StudioSweddingz! Here's my custom quote:\n\n${summary.items.map(i=>`• ${i.name}: ${formatPrice(i.price)}`).join('\n')}\n\nTotal: ${formatPrice(summary.total)}\n\nName: ${summary.customerInfo.name}\nEmail: ${summary.customerInfo.email}\nPhone: ${summary.customerInfo.phone}\nDate: ${summary.eventDetails.date}\nLocation: ${locStr}`;
+      let msg = `Hi StudioSweddingz! Here's my custom quote:\n\n${summary.items.map(i => {
+        if (i.type === 'event') {
+          const dateStr = i.date ? formatDateDisplay(i.date) : 'N/A';
+          return `• ${i.name} (Date: ${dateStr}): ${formatPrice(i.price)}`;
+        }
+        return `• ${i.name}: ${formatPrice(i.price)}`;
+      }).join('\n')}\n\nTotal: ${formatPrice(summary.total)}\n\nName: ${summary.customerInfo.name}\nEmail: ${summary.customerInfo.email}\nPhone: ${summary.customerInfo.phone}\nDate: ${summary.eventDetails.date}\nLocation: ${locStr}`;
       if (summary.eventDetails.referralSource) {
         msg += `\nReferral: ${summary.eventDetails.referralSource}`;
         if (summary.eventDetails.referralSource === 'Reference' && summary.eventDetails.referrerName) {
           msg += ` (${summary.eventDetails.referrerName})`;
         }
       }
+      if (q.budgetRange && q.budgetRange !== 'skipped') {
+        const budgetLabels = { under_1l: 'Under ₹1 Lakh', '1l_2l': '₹1 – 2 Lakhs', '2l_4l': '₹2 – 4 Lakhs', '4l_plus': '₹4 Lakhs+', not_sure: 'Not Sure Yet' };
+        msg += `\nBudget Range: ${budgetLabels[q.budgetRange] || q.budgetRange}`;
+      }
+      // Generate and download the quotation PDF
+      try {
+        generateQuotationPDF(summary, q.budgetRange);
+      } catch (pdfErr) {
+        console.error("PDF generation failed:", pdfErr);
+        alert("PDF Generation Error:\n" + pdfErr.name + ": " + pdfErr.message);
+      }
+
       window.open(`https://wa.me/919100097900?text=${encodeURIComponent(msg)}`, '_blank');
       setSubmitted(true);
     }
@@ -299,7 +658,7 @@ const BuildQuote = () => {
                                       animate={{ opacity: 1, x: 0 }}
                                       exit={{ opacity: 0, x: -10 }}
                                       transition={{ duration: 0.2 }}
-                                      onClick={(e) => { e.stopPropagation(); q.nextStep(); }} 
+                                      onClick={(e) => { e.stopPropagation(); handleWeddingNextStep(); }} 
                                       className="bg-gradient-gold text-noir px-5 py-2 rounded-sm text-xs font-inter tracking-wide font-medium flex items-center gap-1 hover:shadow-lg hover:shadow-gold/20 transition-all z-10"
                                     >
                                       Next Step <ChevronRight size={14}/>
@@ -328,6 +687,11 @@ const BuildQuote = () => {
                                    return srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video';
                                  }
                                  if (srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video') return false;
+
+                                 // Only show Live Streaming and LED Screen for Wedding Day and Reception
+                                 if ((srv.id === 'live_streaming' || srv.id === 'led_screen') && event.id !== 'wedding' && event.id !== 'reception') {
+                                   return false;
+                                 }
 
                                  if ((event.id === 'pellikoduku' || event.id === 'pellikuthuru') && srv.id === 'drone') return false;
                                  if (event.id === 'vratham' && (srv.id === 'candid_photo' || srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
@@ -461,13 +825,115 @@ const BuildQuote = () => {
                                                    exit={{ opacity: 0, scale: 0.8 }}
                                                    className="bg-gold text-noir px-3 py-1 rounded-full text-[10px] font-inter font-semibold"
                                                  >
-                                                   {formatPrice(srv.price)}
+                                                   {(q.eventDays?.[event.id] || 1) > 1 ? `${formatPrice(srv.price)} × ${q.eventDays[event.id]}` : formatPrice(srv.price)}
                                                  </motion.div>
                                                )}
                                              </AnimatePresence>
                                            </motion.div>
                                          );
                                        })}
+
+                                         {/* Event Date Tile */}
+                                         <motion.div
+                                           key="event-date-tile"
+                                           initial={{ opacity: 0, y: 15 }}
+                                           animate={{ opacity: 1, y: 0 }}
+                                           transition={{ delay: filteredServices.length * 0.08, duration: 0.35 }}
+                                           className="flex flex-col items-center group w-24 md:w-28 relative"
+                                         >
+                                           <div className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 cursor-pointer overflow-hidden ${
+                                             q.eventDates?.[event.id]
+                                               ? 'bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]'
+                                               : 'bg-ivory/5 border border-ivory/10 group-hover:border-ivory/25'
+                                           }`}>
+                                             <Calendar className={`relative z-10 pointer-events-none ${q.eventDates?.[event.id] ? 'text-gold' : 'text-ivory/50 group-hover:text-ivory/70'}`} size={24} />
+                                             <input 
+                                               type="date"
+                                               value={q.eventDates?.[event.id] || ''}
+                                               min={todayDate}
+                                               onChange={(e) => {
+                                                 q.updateEventDate(event.id, e.target.value);
+                                                 if (!q.selectedEvents.includes(event.id)) {
+                                                   q.toggleEvent(event.id);
+                                                 }
+                                               }}
+                                               style={{ position: 'absolute' }}
+                                               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-20 [color-scheme:dark]"
+                                             />
+                                             {q.eventDates?.[event.id] && (
+                                               <motion.div
+                                                 initial={{ scale: 0 }}
+                                                 animate={{ scale: 1 }}
+                                                 className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center z-30"
+                                               >
+                                                 <Check size={12} className="text-noir" />
+                                               </motion.div>
+                                             )}
+                                           </div>
+                                           <p className={`font-inter text-[11px] text-center leading-tight mb-2 font-medium ${
+                                             q.eventDates?.[event.id] ? 'text-gold' : 'text-ivory/50'
+                                           }`}>
+                                             {q.eventDates?.[event.id] ? formatDateDisplay(q.eventDates[event.id]) : 'Event Date'}
+                                           </p>
+                                         </motion.div>
+
+                                         {/* Multi-Day Days Tile */}
+                                         {event.multiDay && (
+                                           <motion.div
+                                             key="event-days-tile"
+                                             initial={{ opacity: 0, y: 15 }}
+                                             animate={{ opacity: 1, y: 0 }}
+                                             transition={{ delay: (filteredServices.length + 1) * 0.08, duration: 0.35 }}
+                                             className="flex flex-col items-center group w-24 md:w-28 relative"
+                                           >
+                                             <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]">
+                                               <Clock className="text-gold" size={24} />
+                                               {(q.eventDays?.[event.id] || 1) > 1 && (
+                                                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
+                                                   <Check size={12} className="text-noir" />
+                                                 </div>
+                                               )}
+                                             </div>
+                                             <p className="font-inter text-[11px] text-center leading-tight mb-2 text-gold font-medium">No. of Days</p>
+                                             
+                                             {/* Days Counter Pill */}
+                                             <div className="bg-gold text-noir px-2 py-0.5 rounded-full text-[10px] font-inter font-bold flex items-center justify-center gap-1.5 min-h-[22px]">
+                                               <button
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   q.updateEventDays(event.id, (q.eventDays?.[event.id] || 1) - 1);
+                                                   if (!q.selectedEvents.includes(event.id)) {
+                                                     q.toggleEvent(event.id);
+                                                   }
+                                                 }}
+                                                 disabled={(q.eventDays?.[event.id] || 1) <= 1}
+                                                 className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
+                                                   (q.eventDays?.[event.id] || 1) <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-noir/10 text-noir'
+                                                 }`}
+                                               >
+                                                 <Minus size={10} strokeWidth={3} />
+                                               </button>
+                                               <span className="text-xs font-bold select-none min-w-[8px] text-center">
+                                                 {q.eventDays?.[event.id] || 1}
+                                               </span>
+                                               <button
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   q.updateEventDays(event.id, (q.eventDays?.[event.id] || 1) + 1);
+                                                   if (!q.selectedEvents.includes(event.id)) {
+                                                     q.toggleEvent(event.id);
+                                                   }
+                                                 }}
+                                                 disabled={(q.eventDays?.[event.id] || 1) >= 5}
+                                                 className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
+                                                   (q.eventDays?.[event.id] || 1) >= 5 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-noir/10 text-noir'
+                                                 }`}
+                                               >
+                                                 <Plus size={10} strokeWidth={3} />
+                                               </button>
+                                             </div>
+                                           </motion.div>
+                                         )}
                                      </div>
 
                                      {/* Navigation */}
@@ -754,6 +1220,11 @@ const BuildQuote = () => {
                               <div>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-sm uppercase font-inter tracking-wider ${item.type==='event' ? 'bg-gold/20 text-gold' : item.type==='package' ? 'bg-gold/10 text-gold' : 'bg-ivory/5 text-ivory/50'}`}>{item.type}</span>
                                 <p className="text-ivory font-inter text-sm mt-1 capitalize font-medium">{item.name}</p>
+                                {item.type === 'event' && (
+                                  <p className="text-[11px] text-gold/80 font-inter mt-1.5 flex items-center gap-1.5">
+                                    <Calendar size={11} /> Date: {item.date ? formatDateDisplay(item.date) : 'N/A'}
+                                  </p>
+                                )}
                               </div>
                               <p className="text-gold font-inter font-semibold">{formatPrice(item.price)}</p>
                             </div>
@@ -809,7 +1280,12 @@ const BuildQuote = () => {
                     {q.getQuoteSummary().items.map((item, i) => (
                       <div key={i} className="flex flex-col gap-1.5">
                         <div className="flex justify-between text-xs font-inter">
-                          <span className={`capitalize font-medium ${item.type === 'event' ? 'text-gold' : 'text-ivory/70'}`}>{item.name}</span>
+                          <span className={`capitalize font-medium ${item.type === 'event' ? 'text-gold' : 'text-ivory/70'}`}>
+                            {item.name}
+                            {item.type === 'event' && (
+                              <span className="text-[10px] text-gold/60 font-normal block mt-0.5">Date: {item.date ? formatDateDisplay(item.date) : 'N/A'}</span>
+                            )}
+                          </span>
                           <span className={item.type === 'event' ? 'text-gold font-medium' : 'text-ivory/70'}>{formatPrice(item.price)}</span>
                         </div>
                         {item.type === 'event' && item.services && (
@@ -838,6 +1314,176 @@ const BuildQuote = () => {
           </div>
         )}
       </div>
+      {/* Budget Range Modal */}
+      <AnimatePresence>
+        {showBudgetModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center"
+            onClick={() => { q.setBudgetRange('skipped'); setShowBudgetModal(false); q.nextStep(); }}
+          >
+            {/* Backdrop with animated particles */}
+            <div className="absolute inset-0 bg-noir/90 backdrop-blur-xl">
+              {/* Floating particles */}
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    width: Math.random() * 4 + 2 + 'px',
+                    height: Math.random() * 4 + 2 + 'px',
+                    left: Math.random() * 100 + '%',
+                    top: Math.random() * 100 + '%',
+                    background: `rgba(201, 169, 110, ${Math.random() * 0.5 + 0.2})`,
+                  }}
+                  animate={{
+                    y: [0, -(Math.random() * 80 + 40), 0],
+                    x: [0, (Math.random() - 0.5) * 60, 0],
+                    opacity: [0.2, 0.8, 0.2],
+                    scale: [0.5, 1.2, 0.5],
+                  }}
+                  transition={{
+                    duration: Math.random() * 4 + 3,
+                    repeat: Infinity,
+                    delay: Math.random() * 2,
+                    ease: 'easeInOut',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 30 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-10 w-[95vw] max-w-xl mx-4"
+            >
+              {/* Glowing border ring */}
+              <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-gold/40 via-gold/10 to-gold/30 blur-[1px]" />
+              
+              <div className="relative bg-noir-900 rounded-2xl border border-gold/20 overflow-hidden">
+                {/* Top shimmer bar */}
+                <div className="h-1 budget-card-shimmer" />
+                
+                {/* Header */}
+                <div className="px-6 pt-7 pb-4 text-center relative">
+                  {/* Decorative icon */}
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6, type: 'spring', stiffness: 200 }}
+                    className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 mb-4"
+                  >
+                    <IndianRupee size={24} className="text-gold" />
+                  </motion.div>
+                  
+                  <motion.h2
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="font-playfair text-2xl md:text-3xl text-ivory mb-2"
+                  >
+                    What's your budget range?
+                  </motion.h2>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="text-ivory/50 font-inter text-sm max-w-sm mx-auto"
+                  >
+                    This helps us tailor the perfect coverage for your special day
+                  </motion.p>
+                </div>
+
+                {/* Budget Cards */}
+                <div className="px-5 pb-3 space-y-2.5">
+                  {budgetRanges.map((range, idx) => {
+                    const isSelected = q.budgetRange === range.id;
+                    return (
+                      <motion.button
+                        key={range.id}
+                        initial={{ opacity: 0, x: -30, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        transition={{ delay: 0.35 + idx * 0.08, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={() => handleBudgetSelect(range.id)}
+                        className={`w-full group relative overflow-hidden rounded-xl px-5 py-4 text-left transition-all duration-500 ${
+                          isSelected
+                            ? 'border-2 border-gold bg-gold/10 budget-card-selected'
+                            : 'border border-ivory/10 hover:border-gold/30 hover:bg-ivory/[0.03]'
+                        }`}
+                      >
+                        {/* Shimmer overlay on hover */}
+                        <div className="absolute inset-0 budget-card-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                        
+                        <div className="relative z-10 flex items-center gap-4">
+                          {/* Emoji with glow */}
+                          <motion.span
+                            className="text-2xl md:text-3xl flex-shrink-0 filter drop-shadow-lg"
+                            whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
+                            transition={{ duration: 0.4 }}
+                          >
+                            {range.emoji}
+                          </motion.span>
+                          
+                          {/* Text */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <h3 className={`font-playfair text-base md:text-lg transition-colors ${isSelected ? 'text-gold' : 'text-ivory group-hover:text-gold'}`}>
+                                {range.label}
+                              </h3>
+                            </div>
+                            <p className="text-ivory/40 text-xs font-inter truncate">{range.description}</p>
+                          </div>
+                          
+                          {/* Check indicator */}
+                          <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-400 ${
+                            isSelected ? 'border-gold bg-gold scale-100' : 'border-ivory/20 scale-90'
+                          }`}>
+                            <AnimatePresence>
+                              {isSelected && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  exit={{ scale: 0 }}
+                                >
+                                  <Check size={14} className="text-noir" />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="px-6 py-4 border-t border-ivory/5 flex items-center justify-between"
+                >
+                  <button
+                    onClick={handleBudgetSkip}
+                    className="text-ivory/30 hover:text-ivory/60 font-inter text-xs transition-colors flex items-center gap-1.5"
+                  >
+                    Skip for now <ArrowRight size={12} />
+                  </button>
+                  <p className="text-ivory/20 text-[10px] font-inter">No commitment required</p>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 };
