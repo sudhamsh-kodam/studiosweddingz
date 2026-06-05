@@ -16,6 +16,7 @@ const Films = lazy(() => import('./pages/Films'));
 const BuildQuote = lazy(() => import('./pages/BuildQuote'));
 const BornsAndBumps = lazy(() => import('./pages/BornsAndBumps'));
 const Contact = lazy(() => import('./pages/Contact'));
+const AdminPortfolio = lazy(() => import('./pages/AdminPortfolio'));
 
 const PageFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-noir">
@@ -37,6 +38,7 @@ const AnimatedRoutes = () => {
           <Route path="/borns-and-bumps" element={<BornsAndBumps />} />
           <Route path="/build-quote" element={<BuildQuote />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/admin/portfolio" element={<AdminPortfolio />} />
         </Routes>
       </AnimatePresence>
     </Suspense>

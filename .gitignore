@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local portfolio photos (huge binary assets)
+portfolio-photos/

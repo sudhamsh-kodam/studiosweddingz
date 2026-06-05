@@ -442,13 +442,17 @@ const BuildQuote = () => {
       const locStr = summary.eventDetails.isMultipleLocations && summary.eventDetails.locationSecondary
         ? `${summary.eventDetails.location} & ${summary.eventDetails.locationSecondary}`
         : summary.eventDetails.location;
-      let msg = `Hi StudioSweddingz! Here's my custom quote:\n\n${summary.items.map(i => {
+      let msg = `Hi StudiosWeddingz! Here's my custom quote:\n\n${summary.items.map(i => {
         if (i.type === 'event') {
           const dateStr = i.date ? formatDateDisplay(i.date) : 'N/A';
-          return `• ${i.name} (Date: ${dateStr}): ${formatPrice(i.price)}`;
+          let eventDetails = `• ${i.name} (Date: ${dateStr}): ${formatPrice(i.price)}`;
+          if (i.services && i.services.length > 0) {
+            eventDetails += '\n' + i.services.map(s => `  - ${s.name}`).join('\n');
+          }
+          return eventDetails;
         }
         return `• ${i.name}: ${formatPrice(i.price)}`;
-      }).join('\n')}\n\nTotal: ${formatPrice(summary.total)}\n\nName: ${summary.customerInfo.name}\nEmail: ${summary.customerInfo.email}\nPhone: ${summary.customerInfo.phone}\nDate: ${summary.eventDetails.date}\nLocation: ${locStr}`;
+      }).join('\n')}\n\nTotal: ${formatPrice(summary.total)}\n\nName: ${summary.customerInfo.name}\nEmail: ${summary.customerInfo.email}\nPhone: ${summary.customerInfo.phone}\nDate: ${summary.eventDetails.date ? formatDateDisplay(summary.eventDetails.date) : 'N/A'}\nLocation: ${locStr}`;
       if (summary.eventDetails.referralSource) {
         msg += `\nReferral: ${summary.eventDetails.referralSource}`;
         if (summary.eventDetails.referralSource === 'Reference' && summary.eventDetails.referrerName) {
