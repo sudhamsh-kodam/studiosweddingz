@@ -5,42 +5,42 @@ import Button from '../../ui/Button';
 
 const galleryImages = [
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-LR7vdnM/0/NJvkGng5CFnDHtp5HvP7Z4cLgP6BrkmQgBnvzXpgz/L/01-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-LR7vdnM/0/NJvkGng5CFnDHtp5HvP7Z4cLgP6BrkmQgBnvzXpgz/X3/01-X3.jpg',
     title: 'Sun-Drenched Serenity',
     category: 'Maternity'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-B5xtJwK/0/MrX54ghRKJ5j9dGCgLH9WvRBF9RxXRBmZgxKfRh62/L/18-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-B5xtJwK/0/MrX54ghRKJ5j9dGCgLH9WvRBF9RxXRBmZgxKfRh62/X3/18-X3.jpg',
     title: 'Floral Grandeur',
     category: 'Wedding'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-wScnRDL/0/MQsGS2h8GWprqR5WQrMtD5GrWJwMCh9qFsFTP6d4b/L/KIS01587a-1-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-wScnRDL/0/MQsGS2h8GWprqR5WQrMtD5GrWJwMCh9qFsFTP6d4b/X3/KIS01587a-1-X3.jpg',
     title: 'Whispers of Love',
     category: 'Wedding'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-DK2qCfw/0/KzMBKS97PffCVpTSsvRF5gRjdDcBJ7xngrGbZjBs8/L/SUD00363-1-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-DK2qCfw/0/KzMBKS97PffCVpTSsvRF5gRjdDcBJ7xngrGbZjBs8/X3/SUD00363-1-X3.jpg',
     title: 'Crimson Grace',
     category: 'Maternity'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-nwGP3Gn/0/L2R4ZV254jsPWRsMFb5sPhp5wL5sW4BfxZtPCQbxM/L/DSC00535a-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-nwGP3Gn/0/L2R4ZV254jsPWRsMFb5sPhp5wL5sW4BfxZtPCQbxM/X3/DSC00535a-X3.jpg',
     title: 'Timeless Traditions',
     category: 'Wedding'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-gMdm4MS/0/KG5csBFbMr9TpcShJVg9bjpT8vPzX4CfKrVwsmnvD/L/DSC00604A-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-gMdm4MS/0/KG5csBFbMr9TpcShJVg9bjpT8vPzX4CfKrVwsmnvD/X3/DSC00604A-X3.jpg',
     title: 'Curtained Kiss',
     category: 'Wedding'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-7sSMpk6/0/M3hSS7DQ3PG5mHPrmsJx8cv8TMfTPbf3xTssGHBgk/L/DSC00653a-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-7sSMpk6/0/M3hSS7DQ3PG5mHPrmsJx8cv8TMfTPbf3xTssGHBgk/X3/DSC00653a-X3.jpg',
     title: 'Shy Glances',
     category: 'Wedding'
   },
   {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-w4hpwqQ/0/NdXVFLLg8LMcvBxpF94dtNs6j8fMMtc23cmd6tgLz/L/DSC00660A-L.jpg',
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-w4hpwqQ/0/NdXVFLLg8LMcvBxpF94dtNs6j8fMMtc23cmd6tgLz/X3/DSC00660A-X3.jpg',
     title: 'Eternal Togetherness',
     category: 'Wedding'
   }
@@ -61,17 +61,17 @@ const FeaturedGallery = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
         >
           {galleryImages.map((img, i) => (
             <motion.div
               key={i}
               variants={fadeUp}
               className={`group relative overflow-hidden rounded-sm cursor-pointer ${
-                i === 0 ? 'md:col-span-2 md:row-span-2' : ''
+                i === 0 ? 'col-span-2 row-span-2' : ''
               }`}
             >
-              <div className={`relative overflow-hidden ${i === 0 ? 'aspect-[4/3]' : 'aspect-[3/4]'}`}>
+              <div className={`relative overflow-hidden ${i === 0 ? 'aspect-square' : 'aspect-[3/4]'} w-full h-full`}>
                 <img
                   src={img.src}
                   alt={img.title}
@@ -107,3 +107,4 @@ const FeaturedGallery = () => {
 };
 
 export default FeaturedGallery;
+
