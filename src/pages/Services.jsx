@@ -9,16 +9,20 @@ import GoldDivider from '../components/ui/GoldDivider';
 import { services } from '../data/services';
 import { Check } from 'lucide-react';
 import heroWedding from '../assets/images/hero-wedding.png';
-import heroMaternity from '../assets/images/hero-maternity.png';
-import heroNewborn from '../assets/images/hero-newborn.png';
-import heroKids from '../assets/images/hero-kids.png';
+import heroCandid from '../assets/images/hero-candid.png';
+import heroCinematic from '../assets/images/hero-cinematic.png';
+import heroAerial from '../assets/images/hero-aerial.png';
+import heroTradVideo from '../assets/images/hero-traditional-video.png';
+import heroTraditional from '../assets/images/hero-south-indian.png';
 import heroFashion from '../assets/images/hero-fashion.png';
 
 const imageMap = {
   wedding: heroWedding,
-  maternity: heroMaternity,
-  newborn: heroNewborn,
-  milestone: heroKids,
+  candid: heroCandid,
+  cinematic: heroCinematic,
+  aerial: heroAerial,
+  'trad-video': heroTradVideo,
+  traditional: heroTraditional,
   fashion: heroFashion,
 };
 
