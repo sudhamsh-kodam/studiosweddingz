@@ -38,11 +38,6 @@ const galleryImages = [
     src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-7sSMpk6/0/M3hSS7DQ3PG5mHPrmsJx8cv8TMfTPbf3xTssGHBgk/X3/DSC00653a-X3.jpg',
     title: 'Shy Glances',
     category: 'Wedding'
-  },
-  {
-    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-w4hpwqQ/0/NdXVFLLg8LMcvBxpF94dtNs6j8fMMtc23cmd6tgLz/X3/DSC00660A-X3.jpg',
-    title: 'Eternal Togetherness',
-    category: 'Wedding'
   }
 ];
 
