@@ -2,18 +2,48 @@ import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer } from '../../../utils/animations';
 import SectionHeading from '../../ui/SectionHeading';
 import Button from '../../ui/Button';
-import heroWedding from '../../../assets/images/hero-wedding.png';
-import heroMaternity from '../../../assets/images/hero-maternity.png';
-import heroNewborn from '../../../assets/images/hero-newborn.png';
-import heroFashion from '../../../assets/images/hero-fashion.png';
-import heroKids from '../../../assets/images/hero-kids.png';
 
 const galleryImages = [
-  { src: heroWedding, title: 'A Royal Affair', category: 'Wedding' },
-  { src: heroMaternity, title: 'Ethereal Glow', category: 'Maternity' },
-  { src: heroNewborn, title: 'Tiny Miracles', category: 'Newborn' },
-  { src: heroFashion, title: 'Editorial Grace', category: 'Fashion' },
-  { src: heroKids, title: 'Joyful Moments', category: 'Kids' },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-LR7vdnM/0/NJvkGng5CFnDHtp5HvP7Z4cLgP6BrkmQgBnvzXpgz/L/01-L.jpg',
+    title: 'Sun-Drenched Serenity',
+    category: 'Maternity'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-B5xtJwK/0/MrX54ghRKJ5j9dGCgLH9WvRBF9RxXRBmZgxKfRh62/L/18-L.jpg',
+    title: 'Floral Grandeur',
+    category: 'Wedding'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-wScnRDL/0/MQsGS2h8GWprqR5WQrMtD5GrWJwMCh9qFsFTP6d4b/L/KIS01587a-1-L.jpg',
+    title: 'Whispers of Love',
+    category: 'Wedding'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-DK2qCfw/0/KzMBKS97PffCVpTSsvRF5gRjdDcBJ7xngrGbZjBs8/L/SUD00363-1-L.jpg',
+    title: 'Crimson Grace',
+    category: 'Maternity'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-nwGP3Gn/0/L2R4ZV254jsPWRsMFb5sPhp5wL5sW4BfxZtPCQbxM/L/DSC00535a-L.jpg',
+    title: 'Timeless Traditions',
+    category: 'Wedding'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-gMdm4MS/0/KG5csBFbMr9TpcShJVg9bjpT8vPzX4CfKrVwsmnvD/L/DSC00604A-L.jpg',
+    title: 'Curtained Kiss',
+    category: 'Wedding'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-7sSMpk6/0/M3hSS7DQ3PG5mHPrmsJx8cv8TMfTPbf3xTssGHBgk/L/DSC00653a-L.jpg',
+    title: 'Shy Glances',
+    category: 'Wedding'
+  },
+  {
+    src: 'https://photos.smugmug.com/Studiosweddingz-website/Feature-gallery/i-w4hpwqQ/0/NdXVFLLg8LMcvBxpF94dtNs6j8fMMtc23cmd6tgLz/L/DSC00660A-L.jpg',
+    title: 'Eternal Togetherness',
+    category: 'Wedding'
+  }
 ];
 
 const FeaturedGallery = () => {
