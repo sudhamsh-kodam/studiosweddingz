@@ -87,7 +87,6 @@ const CoupleGallery = ({ couple, onBack }) => {
   const [activeEvent, setActiveEvent] = useState('all');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(20);
 
   const allPhotos = useMemo(() => {
     if (activeEvent === 'all') {
@@ -105,7 +104,7 @@ const CoupleGallery = ({ couple, onBack }) => {
     })) : [];
   }, [couple, activeEvent]);
 
-  const visible = allPhotos.slice(0, visibleCount);
+  const visible = allPhotos;
   const lightboxImages = allPhotos.map(p => ({ src: p.full, alt: `${couple.names} - ${p.event}` }));
 
   const openLightbox = (idx) => { setLightboxIndex(idx); setLightboxOpen(true); };
@@ -161,7 +160,7 @@ const CoupleGallery = ({ couple, onBack }) => {
           className="flex flex-wrap justify-center gap-2 md:gap-3 mb-10"
         >
           <button
-            onClick={() => { setActiveEvent('all'); setVisibleCount(20); }}
+            onClick={() => setActiveEvent('all')}
             className={`px-5 py-2 text-sm font-inter tracking-wide rounded-sm transition-all duration-400 ${
               activeEvent === 'all'
                 ? 'bg-gold text-noir font-medium'
@@ -173,7 +172,7 @@ const CoupleGallery = ({ couple, onBack }) => {
           {couple.events.map((ev) => (
             <button
               key={ev.name}
-              onClick={() => { setActiveEvent(ev.name); setVisibleCount(20); }}
+              onClick={() => setActiveEvent(ev.name)}
               className={`px-5 py-2 text-sm font-inter tracking-wide rounded-sm transition-all duration-400 ${
                 activeEvent === ev.name
                   ? 'bg-gold text-noir font-medium'
@@ -220,18 +219,6 @@ const CoupleGallery = ({ couple, onBack }) => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Load More */}
-      {visibleCount < allPhotos.length && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-12">
-          <button
-            onClick={() => setVisibleCount((prev) => prev + 16)}
-            className="px-8 py-3 border border-gold/30 text-gold text-sm font-inter tracking-wide rounded-sm hover:bg-gold/10 transition-all duration-400"
-          >
-            Load More ({allPhotos.length - visibleCount} remaining)
-          </button>
-        </motion.div>
-      )}
-
       <Lightbox
         images={lightboxImages}
         currentIndex={lightboxIndex}
@@ -249,7 +236,6 @@ const Portfolio = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(12);
   const [couples, setCouples] = useState([]);
   const [selectedCouple, setSelectedCouple] = useState(null);
   const [loadingCouples, setLoadingCouples] = useState(false);
@@ -272,7 +258,7 @@ const Portfolio = () => {
     return portfolioItems.filter((item) => item.category === activeCategory);
   }, [activeCategory]);
 
-  const visible = filtered.slice(0, visibleCount);
+  const visible = filtered;
   const allImages = filtered.map((item) => ({ src: getImage(item), alt: item.title }));
   const openLightbox = (idx) => { setLightboxIndex(idx); setLightboxOpen(true); };
 
@@ -282,7 +268,6 @@ const Portfolio = () => {
 
   const handleCategoryChange = useCallback((catId) => {
     setActiveCategory(catId);
-    setVisibleCount(12);
     setSelectedCouple(null);
   }, []);
 
@@ -480,16 +465,7 @@ const Portfolio = () => {
                   </AnimatePresence>
                 </motion.div>
 
-                {visibleCount < filtered.length && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-12">
-                    <button
-                      onClick={() => setVisibleCount((prev) => prev + 8)}
-                      className="px-8 py-3 border border-gold/30 text-gold text-sm font-inter tracking-wide rounded-sm hover:bg-gold/10 transition-all duration-400"
-                    >
-                      Load More
-                    </button>
-                  </motion.div>
-                )}
+
               </motion.div>
             )}
           </AnimatePresence>
