@@ -65,12 +65,9 @@ export const packageTiers = {
 };
 
 export const addons = [
-  { id: 'drone', name: 'Drone Coverage', description: 'Stunning aerial shots of your venue and celebrations', price: 10000, icon: '🚁', applicableTo: ['wedding','maternity','fashion'] },
-  { id: 'samedayedit', name: 'Same-Day Edit Video', description: 'A highlight video edited and delivered on the same day', price: 20000, icon: '🎬', applicableTo: ['wedding'] },
-  { id: 'extraphotographer', name: 'Extra Photographer', description: 'Additional photographer for more coverage angles', price: 8000, icon: '📷', applicableTo: ['wedding','fashion','traditional','candid','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
-  { id: 'rushdelivery', name: 'Rush Delivery', description: 'Get your photos delivered within 2 weeks instead of 4-6', price: 10000, icon: '⚡', applicableTo: ['wedding','maternity','newborn','milestone','fashion','traditional','candid','traditionalVideo','cinematic','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
-  { id: 'pressbook', name: 'Press Book', description: 'Elegant custom-designed coffee table book with premium matte, glossy, feather touch, embossed, silk matte finish press pages (40 leafs per album)', price: 20000, icon: '📚', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
+  { id: 'pressbook', name: 'Press Book Album', description: 'Elegant custom-designed coffee table book with premium matte, glossy, feather touch, embossed, silk matte finish press pages (40 leafs per album)', price: 20000, icon: '📚', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
   { id: 'magnumalbum', name: 'Magnum Album', description: 'Signature ultra-premium handcrafted leather-bound album with lay-flat sheets (40 leafs per album)', price: 25000, icon: '📖', applicableTo: ['wedding','newborn','candid','traditional','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
+  { id: 'rushdelivery', name: 'Rush Delivery', description: 'Get your photos delivered within 2 weeks instead of 4-6', price: 10000, icon: '⚡', applicableTo: ['wedding','maternity','newborn','milestone','fashion','traditional','candid','traditionalVideo','cinematic','sareeCeremony','birthday','cradleCeremony','babyShower','anniversary'] },
   { id: 'makeup', name: 'Hair & Makeup Artist', description: 'Professional makeup and hair styling for your shoot', price: 7000, icon: '💄', applicableTo: ['maternity','fashion','milestone'] },
   { id: 'videofilm', name: 'Cinematic Film', description: 'A professionally edited 5-8 minute cinematic film', price: 25000, icon: '🎥', applicableTo: ['wedding','candid'] },
 ];

@@ -24,7 +24,6 @@ const initialState = {
     phone: '',
   },
   leadCaptured: false,
-  budgetRange: null,
 };
 
 const SESSION_KEY = 'quoteBuilderState';
@@ -331,15 +330,12 @@ export const useQuoteBuilder = () => {
     return { items, total: totalPrice, eventDetails: state.eventDetails, customerInfo: state.customerInfo };
   }, [state, totalPrice]);
 
-  const setBudgetRange = useCallback((range) => {
-    setState((prev) => ({ ...prev, budgetRange: range }));
-  }, []);
 
   return {
     ...state,
     setStep, nextStep, prevStep,
     toggleService, selectPackage, toggleEvent, toggleEventService, toggleAddon, updateAddonQuantity, updateEventDays,
-    updateEventDetails, updateCustomerInfo, captureLead, setBudgetRange, updateEventDate,
+    updateEventDetails, updateCustomerInfo, captureLead, updateEventDate,
     applicableAddons, totalPrice, canProceed,
     resetQuote, getQuoteSummary,
   };

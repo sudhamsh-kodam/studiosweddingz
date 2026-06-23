@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuoteBuilder } from '../hooks/useQuoteBuilder';
 import { quoteServices, packageTiers, addons, weddingEvents, eventServicesList } from '../data/quoteOptions';
-import { Check, ChevronRight, ChevronLeft, Sparkles, ArrowRight, Calendar, MapPin, MessageSquare, X, User, Phone, Minus, Plus, IndianRupee, Clock } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Sparkles, ArrowRight, Calendar, MapPin, MessageSquare, X, User, Phone, Minus, Plus, Clock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import GoldDivider from '../components/ui/GoldDivider';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
@@ -39,7 +39,7 @@ const StepIndicator = ({ step }) => (
   </div>
 );
 
-const generateQuotationPDF = (summary, budgetRange) => {
+const generateQuotationPDF = (summary) => {
   let ResolvedjsPDF = jsPDF;
   if (ResolvedjsPDF && ResolvedjsPDF.jsPDF) {
     ResolvedjsPDF = ResolvedjsPDF.jsPDF;
@@ -165,17 +165,6 @@ const generateQuotationPDF = (summary, budgetRange) => {
   doc.setTextColor(...cGray);
   doc.text("Wedding Date:", margin + 95, y + 13);
   doc.text("Event Location:", margin + 95, y + 19);
-  doc.text("Target Budget:", margin + 95, y + 25);
-
-  const budgetLabels = { 
-    under_1l: 'Under ₹1 Lakh', 
-    '1l_2l': '₹1 – 2 Lakhs', 
-    '2l_4l': '₹2 – 4 Lakhs', 
-    '4l_plus': '₹4 Lakhs+', 
-    not_sure: 'Not Sure Yet',
-    skipped: 'N/A'
-  };
-  const budgetText = budgetLabels[budgetRange] || 'N/A';
 
   doc.setTextColor(...cNoir);
   doc.setFont("helvetica", "bold");
@@ -187,7 +176,6 @@ const generateQuotationPDF = (summary, budgetRange) => {
   
   const truncatedLoc = (locStr && locStr.length > 25) ? locStr.substring(0, 23) + "..." : (locStr || "N/A");
   doc.text(truncatedLoc, margin + 122, y + 19);
-  doc.text(budgetText, margin + 122, y + 25);
 
   y += 42;
 
@@ -350,38 +338,9 @@ const BuildQuote = () => {
   const [currentEventIndex, setCurrentEventIndex] = useState(() => {
     try { return parseInt(sessionStorage.getItem('quoteEventIndex') || '0', 10); } catch { return 0; }
   });
-  const [showServicesForCurrent, setShowServicesForCurrent] = useState(false);
-  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [eventSelectionDone, setEventSelectionDone] = useState(false);
 
-  const budgetRanges = [
-    { id: 'under_1l', label: 'Under ₹1 Lakh', range: '₹50K – ₹1L', emoji: '💫', description: 'Intimate celebrations with essential coverage', gradient: 'from-amber-900/40 to-yellow-900/30' },
-    { id: '1l_2l', label: '₹1 – 2 Lakhs', range: '₹1L – ₹2L', emoji: '✨', description: 'Complete multi-event wedding coverage', gradient: 'from-yellow-800/40 to-amber-700/30' },
-    { id: '2l_4l', label: '₹2 – 4 Lakhs', range: '₹2L – ₹4L', emoji: '🌟', description: 'Premium cinematic experience with albums', gradient: 'from-amber-700/40 to-yellow-600/20' },
-    { id: '4l_plus', label: '₹4 Lakhs+', range: '₹4L+', emoji: '👑', description: 'Luxury destination wedding production', gradient: 'from-yellow-600/30 to-amber-500/20' },
-    { id: 'not_sure', label: 'Not Sure Yet', range: 'Flexible', emoji: '🤔', description: 'Help me figure out what fits best', gradient: 'from-ivory/5 to-ivory/3' },
-  ];
 
-  const handleWeddingNextStep = useCallback(() => {
-    if (q.selectedServices.includes('wedding') && !q.budgetRange) {
-      setShowBudgetModal(true);
-    } else {
-      q.nextStep();
-    }
-  }, [q]);
-
-  const handleBudgetSelect = useCallback((rangeId) => {
-    q.setBudgetRange(rangeId);
-    setTimeout(() => {
-      setShowBudgetModal(false);
-      q.nextStep();
-    }, 600);
-  }, [q]);
-
-  const handleBudgetSkip = useCallback(() => {
-    q.setBudgetRange('skipped');
-    setShowBudgetModal(false);
-    q.nextStep();
-  }, [q]);
 
   const pageTopRef = useRef(null);
 
@@ -459,13 +418,9 @@ const BuildQuote = () => {
           msg += ` (${summary.eventDetails.referrerName})`;
         }
       }
-      if (q.budgetRange && q.budgetRange !== 'skipped') {
-        const budgetLabels = { under_1l: 'Under ₹1 Lakh', '1l_2l': '₹1 – 2 Lakhs', '2l_4l': '₹2 – 4 Lakhs', '4l_plus': '₹4 Lakhs+', not_sure: 'Not Sure Yet' };
-        msg += `\nBudget Range: ${budgetLabels[q.budgetRange] || q.budgetRange}`;
-      }
       // Generate and download the quotation PDF
       try {
-        generateQuotationPDF(summary, q.budgetRange);
+        generateQuotationPDF(summary);
       } catch (pdfErr) {
         console.error("PDF generation failed:", pdfErr);
         alert("PDF Generation Error:\n" + pdfErr.name + ": " + pdfErr.message);
@@ -505,7 +460,7 @@ const BuildQuote = () => {
               <form onSubmit={handleLeadSubmit} className="space-y-5">
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-ivory/30" size={15} />
-                  <input type="text" value={leadForm.name} onChange={(e) => { setLeadForm(p => ({ ...p, name: e.target.value })); if(leadErrors.name) setLeadErrors(p => ({...p, name: false})); }} placeholder="Your Name *" className={`w-full bg-noir border ${leadErrors.name ? 'border-red-500/60' : 'border-ivory/15'} rounded-sm py-3 pl-11 pr-4 text-ivory placeholder:text-ivory/25 font-inter text-sm focus:outline-none focus:border-gold/50 transition-colors`} />
+                  <input type="text" value={leadForm.name} onKeyDown={(e) => { if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); const telInput = e.target.closest('form')?.querySelector('input[type="tel"]'); if (telInput) telInput.focus(); }}} onChange={(e) => { setLeadForm(p => ({ ...p, name: e.target.value })); if(leadErrors.name) setLeadErrors(p => ({...p, name: false})); }} placeholder="Your Name *" className={`w-full bg-noir border ${leadErrors.name ? 'border-red-500/60' : 'border-ivory/15'} rounded-sm py-3 pl-11 pr-4 text-ivory placeholder:text-ivory/25 font-inter text-sm focus:outline-none focus:border-gold/50 transition-colors`} />
                 </div>
 
                 <div className="relative">
@@ -662,7 +617,7 @@ const BuildQuote = () => {
                                       animate={{ opacity: 1, x: 0 }}
                                       exit={{ opacity: 0, x: -10 }}
                                       transition={{ duration: 0.2 }}
-                                      onClick={(e) => { e.stopPropagation(); handleWeddingNextStep(); }} 
+                                      onClick={(e) => { e.stopPropagation(); q.nextStep(); }} 
                                       className="bg-gradient-gold text-noir px-5 py-2 rounded-sm text-xs font-inter tracking-wide font-medium flex items-center gap-1 hover:shadow-lg hover:shadow-gold/20 transition-all z-10"
                                     >
                                       Next Step <ChevronRight size={14}/>
@@ -682,358 +637,380 @@ const BuildQuote = () => {
                     <div className="space-y-10">
                       {q.selectedServices.includes('wedding') ? (
                         <div>
-                           {currentEventIndex < weddingEvents.length ? (
-                             (() => {
-                               const event = weddingEvents[currentEventIndex];
-                               
-                               const filteredServices = eventServicesList.filter(srv => {
-                                 if (event.id === 'prewedding') {
-                                   return srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video';
-                                 }
-                                 if (srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video') return false;
+                          {!eventSelectionDone ? (
+                            <motion.div
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -15 }}
+                              transition={{ duration: 0.4 }}
+                              className="space-y-8"
+                            >
+                              <div className="text-center">
+                                <h2 className="font-playfair text-3xl md:text-4xl text-ivory mb-3">
+                                  Select Your Wedding Events
+                                </h2>
+                                <p className="text-ivory/50 font-inter text-sm max-w-lg mx-auto">
+                                  Pick all the events you have planned. In the next step, you can select specific photography/videography services for each event.
+                                </p>
+                              </div>
 
-                                 // Only show Live Streaming and LED Screen for Wedding Day and Reception
-                                 if ((srv.id === 'live_streaming' || srv.id === 'led_screen') && event.id !== 'wedding' && event.id !== 'reception') {
-                                   return false;
-                                 }
+                              {/* Grid of Events */}
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {weddingEvents.map((event) => {
+                                  const isSelected = q.selectedEvents.includes(event.id);
+                                  return (
+                                    <div
+                                      key={event.id}
+                                      onClick={() => q.toggleEvent(event.id)}
+                                      className={`group relative overflow-hidden rounded-sm cursor-pointer border-2 transition-all duration-400 h-36 ${
+                                        isSelected
+                                          ? 'border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)] bg-gold/5'
+                                          : 'border-ivory/10 hover:border-gold/40 bg-noir-900'
+                                      }`}
+                                    >
+                                      {/* Event Image */}
+                                      <div className="absolute inset-0 z-0">
+                                        <img
+                                          src={event.image}
+                                          alt={event.name}
+                                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-25 group-hover:opacity-40"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/80 to-transparent" />
+                                      </div>
 
-                                 if ((event.id === 'pellikoduku' || event.id === 'pellikuthuru') && srv.id === 'drone') return false;
-                                 if (event.id === 'vratham' && (srv.id === 'candid_photo' || srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
-                                 if (event.id === 'mehendi' && (srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
-                                 if (event.id === 'cocktail' && (srv.id === 'drone' || srv.id === 'traditional_video')) return false;
-                                 return true;
-                               });
+                                      {/* Checkbox badge */}
+                                      <div className="absolute top-3 right-3 z-20">
+                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                                          isSelected
+                                            ? 'bg-gold border-gold text-noir scale-110'
+                                            : 'border-ivory/30 bg-noir/40 text-transparent'
+                                        }`}>
+                                          <Check size={12} className={isSelected ? 'stroke-[3]' : ''} />
+                                        </div>
+                                      </div>
 
-                               const hasServicesSelected = q.eventServices[event.id]?.length > 0;
-                               const isCommonEvent = ['engagement', 'groom_haldi', 'bride_haldi', 'pellikoduku', 'pellikuthuru', 'wedding', 'reception'].includes(event.id);
-                               const isEventSelected = q.selectedEvents.includes(event.id);
-                               const showServices = showServicesForCurrent || isCommonEvent || isEventSelected;
+                                      {/* Content */}
+                                      <div className="absolute bottom-0 inset-x-0 p-3 z-10">
+                                        <h4 className="font-playfair text-base text-ivory group-hover:text-gold transition-colors mb-0.5 font-semibold">
+                                          {event.name}
+                                        </h4>
+                                        <p className="text-ivory/40 font-inter text-[10px] leading-snug line-clamp-2">
+                                          {event.description}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
 
-                               return (
-                                 <AnimatePresence mode="wait">
-                                   <motion.div
-                                     key={`${event.id}-${showServices}`}
-                                     initial={{ opacity: 0, x: 40 }}
-                                     animate={{ opacity: 1, x: 0 }}
-                                     exit={{ opacity: 0, x: -40 }}
-                                     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                                   >
-                                     {/* Running Total Pill */}
-                                     <div className="flex justify-center mb-10">
-                                       <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/20 rounded-full px-6 py-2.5">
-                                         <span className="text-ivory/60 font-inter text-xs uppercase tracking-widest">Estimate</span>
-                                         <span className="text-gold font-playfair text-xl font-semibold">{formatPrice(q.totalPrice)}</span>
-                                       </div>
-                                     </div>
+                              {/* Navigation */}
+                              <div className="flex flex-col items-center gap-3 pt-4">
+                                <button
+                                  disabled={q.selectedEvents.length === 0}
+                                  onClick={() => {
+                                    setEventSelectionDone(true);
+                                    setCurrentEventIndex(0);
+                                  }}
+                                  className={`flex items-center gap-2 px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide transition-all duration-400 ${
+                                    q.selectedEvents.length > 0
+                                      ? 'bg-gradient-gold text-noir hover:shadow-lg hover:shadow-gold/20'
+                                      : 'bg-ivory/5 text-ivory/20 cursor-not-allowed'
+                                  }`}
+                                >
+                                  Next: Configure Services ({q.selectedEvents.length} Selected) <ChevronRight size={14} />
+                                </button>
+                                {q.selectedEvents.length === 0 && (
+                                  <p className="text-gold/50 font-inter text-xs">Select at least one event to proceed.</p>
+                                )}
+                              </div>
+                            </motion.div>
+                          ) : (
+                            <div>
+                              {currentEventIndex < q.selectedEvents.length ? (
+                                (() => {
+                                  const eventId = q.selectedEvents[currentEventIndex];
+                                  const event = weddingEvents.find(e => e.id === eventId);
+                                  if (!event) return null;
 
-                                     {!showServices ? (
-                                       /* Phase 1: Yes/No Question */
-                                       <div className="text-center">
-                                         <h2 className="font-playfair text-3xl md:text-4xl text-ivory mb-12">
-                                           Do We Have {event.name}?
-                                         </h2>
-                                         <div className="flex justify-center gap-10 mb-10">
-                                           {/* Yes Button */}
-                                           <button
-                                             onClick={() => {
-                                               if (!q.selectedEvents.includes(event.id)) {
-                                                 q.toggleEvent(event.id);
-                                               }
-                                               setShowServicesForCurrent(true);
-                                             }}
-                                             className="group flex flex-col items-center gap-3"
-                                           >
-                                             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gold/10 border-2 border-gold/30 flex items-center justify-center transition-all duration-300 group-hover:bg-gold/20 group-hover:border-gold group-hover:shadow-[0_0_25px_rgba(212,175,55,0.2)] group-hover:scale-105">
-                                               <Check size={36} className="text-gold" />
-                                             </div>
-                                             <span className="text-gold font-inter text-sm font-medium">Yes</span>
-                                           </button>
-                                           {/* No Button */}
-                                           <button
-                                             onClick={() => {
-                                               if (q.selectedEvents.includes(event.id)) {
-                                                 q.toggleEvent(event.id);
-                                               }
-                                               setCurrentEventIndex(prev => prev + 1);
-                                               setShowServicesForCurrent(false);
-                                             }}
-                                             className="group flex flex-col items-center gap-3"
-                                           >
-                                             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-ivory/5 border-2 border-ivory/15 flex items-center justify-center transition-all duration-300 group-hover:bg-ivory/10 group-hover:border-ivory/30 group-hover:scale-105">
-                                               <X size={36} className="text-ivory/50" />
-                                             </div>
-                                             <span className="text-ivory/50 font-inter text-sm font-medium">No</span>
-                                           </button>
-                                         </div>
-                                         {/* Previous step */}
-                                         {currentEventIndex > 0 && (
-                                           <button
-                                             onClick={() => {
-                                               setCurrentEventIndex(prev => prev - 1);
-                                               setShowServicesForCurrent(false);
-                                             }}
-                                             className="flex items-center gap-1 text-gold/50 hover:text-gold font-inter text-xs transition-colors mx-auto"
-                                           >
-                                             <ChevronLeft size={14} /> Previous step
-                                           </button>
-                                         )}
-                                       </div>
-                                     ) : (
-                                       /* Phase 2: Service Selection */
-                                       <div>
-                                         <div className="text-center mb-10">
-                                           <h2 className="font-playfair text-3xl md:text-4xl text-ivory mb-3">{event.name}</h2>
-                                           <p className="text-ivory/50 font-inter text-sm max-w-md mx-auto">{event.description}</p>
-                                         </div>
+                                  const filteredServices = eventServicesList.filter(srv => {
+                                    if (event.id === 'prewedding') {
+                                      return srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video';
+                                    }
+                                    if (srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video') return false;
 
-                                     {/* Service Selection — Horizontal Row */}
-                                     <div className="flex flex-wrap justify-center gap-8 md:gap-12 mb-12">
-                                       {filteredServices.map((srv, srvIdx) => {
-                                         const srvSelected = q.eventServices[event.id]?.includes(srv.id);
-                                         return (
-                                           <motion.div
-                                             key={srv.id}
-                                             initial={{ opacity: 0, y: 15 }}
-                                             animate={{ opacity: 1, y: 0 }}
-                                             transition={{ delay: srvIdx * 0.08, duration: 0.35 }}
-                                             onClick={() => {
-                                               if (!q.selectedEvents.includes(event.id)) {
-                                                 q.toggleEvent(event.id);
-                                               }
-                                               q.toggleEventService(event.id, srv.id);
-                                             }}
-                                             className="flex flex-col items-center cursor-pointer group w-24 md:w-28"
-                                           >
-                                             {/* Icon */}
-                                             <div className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 ${srvSelected ? 'bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]' : 'bg-ivory/5 border border-ivory/10 group-hover:border-ivory/25'}`}>
-                                               <span className="text-2xl md:text-3xl">{srv.icon}</span>
-                                               {/* Checkmark */}
-                                               {srvSelected && (
-                                                 <motion.div
-                                                   initial={{ scale: 0 }}
-                                                   animate={{ scale: 1 }}
-                                                   className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center"
-                                                 >
-                                                   <Check size={12} className="text-noir" />
-                                                 </motion.div>
-                                               )}
-                                             </div>
-                                             {/* Name */}
-                                             <p className={`font-inter text-[11px] text-center leading-tight mb-2 ${srvSelected ? 'text-gold font-medium' : 'text-ivory/50'}`}>{srv.name}</p>
-                                             {/* Price Pill — only show when selected */}
-                                             <AnimatePresence>
-                                               {srvSelected && (
-                                                 <motion.div
-                                                   initial={{ opacity: 0, scale: 0.8 }}
-                                                   animate={{ opacity: 1, scale: 1 }}
-                                                   exit={{ opacity: 0, scale: 0.8 }}
-                                                   className="bg-gold text-noir px-3 py-1 rounded-full text-[10px] font-inter font-semibold"
-                                                 >
-                                                   {(q.eventDays?.[event.id] || 1) > 1 ? `${formatPrice(srv.price)} × ${q.eventDays[event.id]}` : formatPrice(srv.price)}
-                                                 </motion.div>
-                                               )}
-                                             </AnimatePresence>
-                                           </motion.div>
-                                         );
-                                       })}
+                                    // Only show Live Streaming and LED Screen for Wedding Day and Reception
+                                    if ((srv.id === 'live_streaming' || srv.id === 'led_screen') && event.id !== 'wedding' && event.id !== 'reception') {
+                                      return false;
+                                    }
 
-                                         {/* Event Date Tile */}
-                                         <motion.div
-                                           key="event-date-tile"
-                                           initial={{ opacity: 0, y: 15 }}
-                                           animate={{ opacity: 1, y: 0 }}
-                                           transition={{ delay: filteredServices.length * 0.08, duration: 0.35 }}
-                                           className="flex flex-col items-center group w-24 md:w-28 relative"
-                                         >
-                                           <div className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 cursor-pointer overflow-hidden ${
-                                             q.eventDates?.[event.id]
-                                               ? 'bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]'
-                                               : 'bg-ivory/5 border border-ivory/10 group-hover:border-ivory/25'
-                                           }`}>
-                                             <Calendar className={`relative z-10 pointer-events-none ${q.eventDates?.[event.id] ? 'text-gold' : 'text-ivory/50 group-hover:text-ivory/70'}`} size={24} />
-                                             <input 
-                                               type="date"
-                                               value={q.eventDates?.[event.id] || ''}
-                                               min={todayDate}
-                                               onChange={(e) => {
-                                                 q.updateEventDate(event.id, e.target.value);
-                                                 if (!q.selectedEvents.includes(event.id)) {
-                                                   q.toggleEvent(event.id);
-                                                 }
-                                               }}
-                                               style={{ position: 'absolute' }}
-                                               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-20 [color-scheme:dark]"
-                                             />
-                                             {q.eventDates?.[event.id] && (
-                                               <motion.div
-                                                 initial={{ scale: 0 }}
-                                                 animate={{ scale: 1 }}
-                                                 className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center z-30"
-                                               >
-                                                 <Check size={12} className="text-noir" />
-                                               </motion.div>
-                                             )}
-                                           </div>
-                                           <p className={`font-inter text-[11px] text-center leading-tight mb-2 font-medium ${
-                                             q.eventDates?.[event.id] ? 'text-gold' : 'text-ivory/50'
-                                           }`}>
-                                             {q.eventDates?.[event.id] ? formatDateDisplay(q.eventDates[event.id]) : 'Event Date'}
-                                           </p>
-                                         </motion.div>
+                                    if ((event.id === 'pellikoduku' || event.id === 'pellikuthuru') && srv.id === 'drone') return false;
+                                    if (event.id === 'vratham' && (srv.id === 'candid_photo' || srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
+                                    if (event.id === 'mehendi' && (srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
+                                    if (event.id === 'cocktail' && (srv.id === 'drone' || srv.id === 'traditional_video')) return false;
+                                    return true;
+                                  });
 
-                                         {/* Multi-Day Days Tile */}
-                                         {event.multiDay && (
-                                           <motion.div
-                                             key="event-days-tile"
-                                             initial={{ opacity: 0, y: 15 }}
-                                             animate={{ opacity: 1, y: 0 }}
-                                             transition={{ delay: (filteredServices.length + 1) * 0.08, duration: 0.35 }}
-                                             className="flex flex-col items-center group w-24 md:w-28 relative"
-                                           >
-                                             <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]">
-                                               <Clock className="text-gold" size={24} />
-                                               {(q.eventDays?.[event.id] || 1) > 1 && (
-                                                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
-                                                   <Check size={12} className="text-noir" />
-                                                 </div>
-                                               )}
-                                             </div>
-                                             <p className="font-inter text-[11px] text-center leading-tight mb-2 text-gold font-medium">No. of Days</p>
-                                             
-                                             {/* Days Counter Pill */}
-                                             <div className="bg-gold text-noir px-2 py-0.5 rounded-full text-[10px] font-inter font-bold flex items-center justify-center gap-1.5 min-h-[22px]">
-                                               <button
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   q.updateEventDays(event.id, (q.eventDays?.[event.id] || 1) - 1);
-                                                   if (!q.selectedEvents.includes(event.id)) {
-                                                     q.toggleEvent(event.id);
-                                                   }
-                                                 }}
-                                                 disabled={(q.eventDays?.[event.id] || 1) <= 1}
-                                                 className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
-                                                   (q.eventDays?.[event.id] || 1) <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-noir/10 text-noir'
-                                                 }`}
-                                               >
-                                                 <Minus size={10} strokeWidth={3} />
-                                               </button>
-                                               <span className="text-xs font-bold select-none min-w-[8px] text-center">
-                                                 {q.eventDays?.[event.id] || 1}
-                                               </span>
-                                               <button
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   q.updateEventDays(event.id, (q.eventDays?.[event.id] || 1) + 1);
-                                                   if (!q.selectedEvents.includes(event.id)) {
-                                                     q.toggleEvent(event.id);
-                                                   }
-                                                 }}
-                                                 disabled={(q.eventDays?.[event.id] || 1) >= 5}
-                                                 className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
-                                                   (q.eventDays?.[event.id] || 1) >= 5 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-noir/10 text-noir'
-                                                 }`}
-                                               >
-                                                 <Plus size={10} strokeWidth={3} />
-                                               </button>
-                                             </div>
-                                           </motion.div>
-                                         )}
-                                     </div>
+                                  return (
+                                    <AnimatePresence mode="wait">
+                                      <motion.div
+                                        key={event.id}
+                                        initial={{ opacity: 0, x: 40 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -40 }}
+                                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                                      >
+                                        {/* Running Total Pill */}
+                                        <div className="flex justify-center mb-10">
+                                          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/20 rounded-full px-6 py-2.5">
+                                            <span className="text-ivory/60 font-inter text-xs uppercase tracking-widest">Estimate</span>
+                                            <span className="text-gold font-playfair text-xl font-semibold">{formatPrice(q.totalPrice)}</span>
+                                          </div>
+                                        </div>
 
-                                     {/* Navigation */}
-                                     <div className="flex flex-col items-center gap-4">
-                                       <button
-                                         onClick={() => {
-                                           setCurrentEventIndex(prev => prev + 1);
-                                           setShowServicesForCurrent(false);
-                                         }}
-                                         className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
-                                       >
-                                         <Check size={14} /> Next Step
-                                       </button>
-                                       {currentEventIndex > 0 && (
-                                         <button
-                                           onClick={() => {
-                                             setCurrentEventIndex(prev => prev - 1);
-                                             setShowServicesForCurrent(false);
-                                           }}
-                                           className="flex items-center gap-1 text-gold/60 hover:text-gold font-inter text-xs transition-colors"
-                                         >
-                                           <ChevronLeft size={14} /> Previous step
-                                         </button>
-                                       )}
-                                       {!isCommonEvent && (
-                                         <button
-                                           onClick={() => {
-                                             q.toggleEvent(event.id);
-                                             setCurrentEventIndex(prev => prev + 1);
-                                             setShowServicesForCurrent(false);
-                                           }}
-                                           className="text-red-400/50 hover:text-red-400 font-inter text-xs mt-1 transition-colors"
-                                         >
-                                           We don't have this event
-                                         </button>
-                                       )}
-                                     </div>
+                                        {/* Event Details Heading */}
+                                        <div>
+                                          <div className="text-center mb-10">
+                                            <h2 className="font-playfair text-3xl md:text-4xl text-ivory mb-3">{event.name}</h2>
+                                            <p className="text-ivory/50 font-inter text-sm max-w-md mx-auto">{event.description}</p>
+                                          </div>
 
-                                     {/* Progress dots */}
-                                     <div className="flex justify-center gap-1.5 mt-8">
-                                       {weddingEvents.map((_, idx) => (
-                                         <div
-                                           key={idx}
-                                           className={`h-1 rounded-full transition-all duration-400 ${idx === currentEventIndex ? 'w-6 bg-gold' : idx < currentEventIndex ? 'w-1.5 bg-gold/40' : 'w-1.5 bg-ivory/15'}`}
-                                         />
-                                       ))}
-                                     </div>
-                                       </div>
-                                     )}
-                                   </motion.div>
-                                 </AnimatePresence>
-                               );
-                             })()
-                           ) : (
-                             <motion.div
-                               initial={{ opacity: 0, scale: 0.95 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               className="text-center py-12"
-                             >
-                               {/* Running Total Pill */}
-                               <div className="flex justify-center mb-8">
-                                 <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/20 rounded-full px-6 py-2.5">
-                                   <span className="text-ivory/60 font-inter text-xs uppercase tracking-widest">Estimate</span>
-                                   <span className="text-gold font-playfair text-xl font-semibold">{formatPrice(q.totalPrice)}</span>
-                                 </div>
-                               </div>
+                                          {/* Service Selection — Horizontal Row */}
+                                          <div className="flex flex-wrap justify-center gap-8 md:gap-12 mb-12">
+                                            {filteredServices.map((srv, srvIdx) => {
+                                              const srvSelected = q.eventServices[event.id]?.includes(srv.id);
+                                              return (
+                                                <motion.div
+                                                  key={srv.id}
+                                                  initial={{ opacity: 0, y: 15 }}
+                                                  animate={{ opacity: 1, y: 0 }}
+                                                  transition={{ delay: srvIdx * 0.08, duration: 0.35 }}
+                                                  onClick={() => {
+                                                    q.toggleEventService(event.id, srv.id);
+                                                  }}
+                                                  className="flex flex-col items-center cursor-pointer group w-24 md:w-28"
+                                                >
+                                                  {/* Icon */}
+                                                  <div className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 ${srvSelected ? 'bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]' : 'bg-ivory/5 border border-ivory/10 group-hover:border-ivory/25'}`}>
+                                                    <span className="text-2xl md:text-3xl">{srv.icon}</span>
+                                                    {/* Checkmark */}
+                                                    {srvSelected && (
+                                                      <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center"
+                                                      >
+                                                        <Check size={12} className="text-noir" />
+                                                      </motion.div>
+                                                    )}
+                                                  </div>
+                                                  {/* Name */}
+                                                  <p className={`font-inter text-[11px] text-center leading-tight mb-2 ${srvSelected ? 'text-gold font-medium' : 'text-ivory/50'}`}>{srv.name}</p>
+                                                  {/* Price Pill — only show when selected */}
+                                                  <AnimatePresence>
+                                                    {srvSelected && (
+                                                      <motion.div
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.8 }}
+                                                        className="bg-gold text-noir px-3 py-1 rounded-full text-[10px] font-inter font-semibold"
+                                                      >
+                                                        {(q.eventDays?.[event.id] || 1) > 1 ? `${formatPrice(srv.price)} × ${q.eventDays[event.id]}` : formatPrice(srv.price)}
+                                                      </motion.div>
+                                                    )}
+                                                  </AnimatePresence>
+                                                </motion.div>
+                                              );
+                                            })}
 
-                               <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                 <Check className="text-gold" size={32} />
-                               </div>
-                               <h3 className="font-playfair text-2xl text-ivory mb-3">All Events Configured</h3>
-                               <p className="text-ivory/50 font-inter text-sm mb-8 max-w-sm mx-auto">
-                                 {q.selectedEvents.length > 0 
-                                   ? `You've selected ${q.selectedEvents.length} event${q.selectedEvents.length === 1 ? '' : 's'} for coverage.`
-                                   : 'No events selected. You can go back to add events.'}
-                               </p>
-                               <div className="flex flex-col items-center gap-3">
-                                 <button
-                                   onClick={q.nextStep}
-                                   className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
-                                 >
-                                   <Check size={14} /> Continue
-                                 </button>
-                                 <button
-                                   onClick={() => {
-                                     setCurrentEventIndex(0);
-                                     setShowServicesForCurrent(false);
-                                   }}
-                                   className="flex items-center gap-1 text-gold/60 hover:text-gold font-inter text-xs transition-colors"
-                                 >
-                                   <ChevronLeft size={14} /> Review events
-                                 </button>
-                               </div>
-                             </motion.div>
-                           )}
-                         </div>
+                                            {/* Event Date Tile */}
+                                            <motion.div
+                                              key="event-date-tile"
+                                              initial={{ opacity: 0, y: 15 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              transition={{ delay: filteredServices.length * 0.08, duration: 0.35 }}
+                                              className="flex flex-col items-center group w-24 md:w-28 relative"
+                                            >
+                                              <div className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 cursor-pointer overflow-hidden ${
+                                                q.eventDates?.[event.id]
+                                                  ? 'bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]'
+                                                  : 'bg-ivory/5 border border-ivory/10 group-hover:border-ivory/25'
+                                              }`}>
+                                                <Calendar className={`relative z-10 pointer-events-none ${q.eventDates?.[event.id] ? 'text-gold' : 'text-ivory/50 group-hover:text-ivory/70'}`} size={24} />
+                                                <input
+                                                  type="date"
+                                                  value={q.eventDates?.[event.id] || ''}
+                                                  min={todayDate}
+                                                  onChange={(e) => {
+                                                    q.updateEventDate(event.id, e.target.value);
+                                                  }}
+                                                  style={{ position: 'absolute' }}
+                                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-20 [color-scheme:dark]"
+                                                />
+                                                {q.eventDates?.[event.id] && (
+                                                  <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center z-30"
+                                                  >
+                                                    <Check size={12} className="text-noir" />
+                                                  </motion.div>
+                                                )}
+                                              </div>
+                                              <p className={`font-inter text-[11px] text-center leading-tight mb-2 font-medium ${
+                                                q.eventDates?.[event.id] ? 'text-gold' : 'text-ivory/50'
+                                              }`}>
+                                                {q.eventDates?.[event.id] ? formatDateDisplay(q.eventDates[event.id]) : 'Event Date'}
+                                              </p>
+                                            </motion.div>
+
+                                            {/* Multi-Day Days Tile */}
+                                            {event.multiDay && (
+                                              <motion.div
+                                                key="event-days-tile"
+                                                initial={{ opacity: 0, y: 15 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: (filteredServices.length + 1) * 0.08, duration: 0.35 }}
+                                                className="flex flex-col items-center group w-24 md:w-28 relative"
+                                              >
+                                                <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-400 mb-3 bg-gold/10 border-2 border-gold shadow-[0_0_20px_rgba(212,175,55,0.15)]">
+                                                  <Clock className="text-gold" size={24} />
+                                                  {(q.eventDays?.[event.id] || 1) > 1 && (
+                                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
+                                                      <Check size={12} className="text-noir" />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                <p className="font-inter text-[11px] text-center leading-tight mb-2 text-gold font-medium">No. of Days</p>
+
+                                                {/* Days Counter Pill */}
+                                                <div className="bg-gold text-noir px-2 py-0.5 rounded-full text-[10px] font-inter font-bold flex items-center justify-center gap-1.5 min-h-[22px]">
+                                                  <button
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      q.updateEventDays(event.id, (q.eventDays?.[event.id] || 1) - 1);
+                                                    }}
+                                                    disabled={(q.eventDays?.[event.id] || 1) <= 1}
+                                                    className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
+                                                      (q.eventDays?.[event.id] || 1) <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-noir/10 text-noir'
+                                                    }`}
+                                                  >
+                                                    <Minus size={10} strokeWidth={3} />
+                                                  </button>
+                                                  <span className="text-xs font-bold select-none min-w-[8px] text-center">
+                                                    {q.eventDays?.[event.id] || 1}
+                                                  </span>
+                                                  <button
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      q.updateEventDays(event.id, (q.eventDays?.[event.id] || 1) + 1);
+                                                    }}
+                                                    disabled={(q.eventDays?.[event.id] || 1) >= 5}
+                                                    className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
+                                                      (q.eventDays?.[event.id] || 1) >= 5 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-noir/10 text-noir'
+                                                    }`}
+                                                  >
+                                                    <Plus size={10} strokeWidth={3} />
+                                                  </button>
+                                                </div>
+                                              </motion.div>
+                                            )}
+                                          </div>
+
+                                          {/* Navigation */}
+                                          <div className="flex flex-col items-center gap-4">
+                                            <button
+                                              onClick={() => {
+                                                setCurrentEventIndex(prev => prev + 1);
+                                              }}
+                                              className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
+                                            >
+                                              <Check size={14} /> Next Event
+                                            </button>
+                                            <button
+                                              onClick={() => {
+                                                if (currentEventIndex > 0) {
+                                                  setCurrentEventIndex(prev => prev - 1);
+                                                } else {
+                                                  setEventSelectionDone(false);
+                                                  setCurrentEventIndex(0);
+                                                }
+                                              }}
+                                              className="flex items-center gap-1 text-gold/60 hover:text-gold font-inter text-xs transition-colors"
+                                            >
+                                              <ChevronLeft size={14} /> Previous step
+                                            </button>
+                                            <button
+                                              onClick={() => {
+                                                q.toggleEvent(event.id);
+                                                if (currentEventIndex >= q.selectedEvents.length - 1) {
+                                                  setCurrentEventIndex(Math.max(0, q.selectedEvents.length - 2));
+                                                }
+                                              }}
+                                              className="text-red-400/50 hover:text-red-400 font-inter text-xs mt-1 transition-colors"
+                                            >
+                                              Remove this event
+                                            </button>
+                                          </div>
+
+                                          {/* Progress dots */}
+                                          <div className="flex justify-center gap-1.5 mt-8">
+                                            {q.selectedEvents.map((_, idx) => (
+                                              <div
+                                                key={idx}
+                                                className={`h-1 rounded-full transition-all duration-400 ${idx === currentEventIndex ? 'w-6 bg-gold' : idx < currentEventIndex ? 'w-1.5 bg-gold/40' : 'w-1.5 bg-ivory/15'}`}
+                                              />
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    </AnimatePresence>
+                                  );
+                                })()
+                              ) : (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="text-center py-12"
+                                >
+                                  {/* Running Total Pill */}
+                                  <div className="flex justify-center mb-8">
+                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/20 rounded-full px-6 py-2.5">
+                                      <span className="text-ivory/60 font-inter text-xs uppercase tracking-widest">Estimate</span>
+                                      <span className="text-gold font-playfair text-xl font-semibold">{formatPrice(q.totalPrice)}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Check className="text-gold" size={32} />
+                                  </div>
+                                  <h3 className="font-playfair text-2xl text-ivory mb-3">All Events Configured</h3>
+                                  <p className="text-ivory/50 font-inter text-sm mb-8 max-w-sm mx-auto">
+                                    {q.selectedEvents.length > 0
+                                      ? `You've selected and configured ${q.selectedEvents.length} event${q.selectedEvents.length === 1 ? '' : 's'} for coverage.`
+                                      : 'No events selected. You can go back to add events.'}
+                                  </p>
+                                  <div className="flex flex-col items-center gap-3">
+                                    <button
+                                      onClick={q.nextStep}
+                                      className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
+                                    >
+                                      <Check size={14} /> Continue
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setEventSelectionDone(false);
+                                        setCurrentEventIndex(0);
+                                      }}
+                                      className="flex items-center gap-1 text-gold/60 hover:text-gold font-inter text-xs transition-colors"
+                                    >
+                                      <ChevronLeft size={14} /> Review events selection
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         q.selectedServices.map((sId) => {
                           const tiers = packageTiers[sId] || [];
@@ -1261,11 +1238,23 @@ const BuildQuote = () => {
               {/* Navigation */}
               <div className="flex justify-between items-center mt-10 pt-6 border-t border-ivory/10">
                 {q.step > 1 ? (
-                  <button onClick={q.prevStep} className="flex items-center gap-2 text-ivory/50 hover:text-ivory font-inter text-sm transition-colors"><ChevronLeft size={16}/>Back</button>
-                ) : <div/>}
+                  <button
+                    onClick={() => {
+                      if (q.step === 2 && q.selectedServices.includes('wedding') && eventSelectionDone) {
+                        setEventSelectionDone(false);
+                        setCurrentEventIndex(0);
+                      } else {
+                        q.prevStep();
+                      }
+                    }}
+                    className="flex items-center gap-2 text-ivory/50 hover:text-ivory font-inter text-sm transition-colors"
+                  >
+                    <ChevronLeft size={16}/>Back
+                  </button>
+                ) : <div />}
                 
-                {q.step === 1 ? (
-                  <div /> // Hide global Next button on step 1, rely on the inline tile button
+                {q.step === 1 || (q.step === 2 && q.selectedServices.includes('wedding')) ? (
+                  <div /> // Hide global Next button on step 1 and step 2 wedding, rely on the inline buttons
                 ) : q.step < 5 ? (
                   <button onClick={q.nextStep} disabled={!q.canProceed} className={`flex items-center gap-2 px-6 py-3 rounded-sm font-inter text-sm tracking-wide transition-all duration-400 ${q.canProceed?'bg-gradient-gold text-noir hover:shadow-lg hover:shadow-gold/20':'bg-ivory/5 text-ivory/20 cursor-not-allowed'}`}>Next <ChevronRight size={16}/></button>
                 ) : (
@@ -1318,175 +1307,7 @@ const BuildQuote = () => {
           </div>
         )}
       </div>
-      {/* Budget Range Modal */}
-      <AnimatePresence>
-        {showBudgetModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center"
-            onClick={() => { q.setBudgetRange('skipped'); setShowBudgetModal(false); q.nextStep(); }}
-          >
-            {/* Backdrop with animated particles */}
-            <div className="absolute inset-0 bg-noir/90 backdrop-blur-xl">
-              {/* Floating particles */}
-              {[...Array(20)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute rounded-full"
-                  style={{
-                    width: Math.random() * 4 + 2 + 'px',
-                    height: Math.random() * 4 + 2 + 'px',
-                    left: Math.random() * 100 + '%',
-                    top: Math.random() * 100 + '%',
-                    background: `rgba(201, 169, 110, ${Math.random() * 0.5 + 0.2})`,
-                  }}
-                  animate={{
-                    y: [0, -(Math.random() * 80 + 40), 0],
-                    x: [0, (Math.random() - 0.5) * 60, 0],
-                    opacity: [0.2, 0.8, 0.2],
-                    scale: [0.5, 1.2, 0.5],
-                  }}
-                  transition={{
-                    duration: Math.random() * 4 + 3,
-                    repeat: Infinity,
-                    delay: Math.random() * 2,
-                    ease: 'easeInOut',
-                  }}
-                />
-              ))}
-            </div>
 
-            {/* Modal Content */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 40 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.85, y: 30 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative z-10 w-[95vw] max-w-xl mx-4"
-            >
-              {/* Glowing border ring */}
-              <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-gold/40 via-gold/10 to-gold/30 blur-[1px]" />
-              
-              <div className="relative bg-noir-900 rounded-2xl border border-gold/20 overflow-hidden">
-                {/* Top shimmer bar */}
-                <div className="h-1 budget-card-shimmer" />
-                
-                {/* Header */}
-                <div className="px-6 pt-7 pb-4 text-center relative">
-                  {/* Decorative icon */}
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.2, duration: 0.6, type: 'spring', stiffness: 200 }}
-                    className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 mb-4"
-                  >
-                    <IndianRupee size={24} className="text-gold" />
-                  </motion.div>
-                  
-                  <motion.h2
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="font-playfair text-2xl md:text-3xl text-ivory mb-2"
-                  >
-                    What's your budget range?
-                  </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-ivory/50 font-inter text-sm max-w-sm mx-auto"
-                  >
-                    This helps us tailor the perfect coverage for your special day
-                  </motion.p>
-                </div>
-
-                {/* Budget Cards */}
-                <div className="px-5 pb-3 space-y-2.5">
-                  {budgetRanges.map((range, idx) => {
-                    const isSelected = q.budgetRange === range.id;
-                    return (
-                      <motion.button
-                        key={range.id}
-                        initial={{ opacity: 0, x: -30, scale: 0.95 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        transition={{ delay: 0.35 + idx * 0.08, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        onClick={() => handleBudgetSelect(range.id)}
-                        className={`w-full group relative overflow-hidden rounded-xl px-5 py-4 text-left transition-all duration-500 ${
-                          isSelected
-                            ? 'border-2 border-gold bg-gold/10 budget-card-selected'
-                            : 'border border-ivory/10 hover:border-gold/30 hover:bg-ivory/[0.03]'
-                        }`}
-                      >
-                        {/* Shimmer overlay on hover */}
-                        <div className="absolute inset-0 budget-card-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                        
-                        <div className="relative z-10 flex items-center gap-4">
-                          {/* Emoji with glow */}
-                          <motion.span
-                            className="text-2xl md:text-3xl flex-shrink-0 filter drop-shadow-lg"
-                            whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
-                            transition={{ duration: 0.4 }}
-                          >
-                            {range.emoji}
-                          </motion.span>
-                          
-                          {/* Text */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <h3 className={`font-playfair text-base md:text-lg transition-colors ${isSelected ? 'text-gold' : 'text-ivory group-hover:text-gold'}`}>
-                                {range.label}
-                              </h3>
-                            </div>
-                            <p className="text-ivory/40 text-xs font-inter truncate">{range.description}</p>
-                          </div>
-                          
-                          {/* Check indicator */}
-                          <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-400 ${
-                            isSelected ? 'border-gold bg-gold scale-100' : 'border-ivory/20 scale-90'
-                          }`}>
-                            <AnimatePresence>
-                              {isSelected && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  exit={{ scale: 0 }}
-                                >
-                                  <Check size={14} className="text-noir" />
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                {/* Footer */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8, duration: 0.5 }}
-                  className="px-6 py-4 border-t border-ivory/5 flex items-center justify-between"
-                >
-                  <button
-                    onClick={handleBudgetSkip}
-                    className="text-ivory/30 hover:text-ivory/60 font-inter text-xs transition-colors flex items-center gap-1.5"
-                  >
-                    Skip for now <ArrowRight size={12} />
-                  </button>
-                  <p className="text-ivory/20 text-[10px] font-inter">No commitment required</p>
-                </motion.div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
     </main>
   );
