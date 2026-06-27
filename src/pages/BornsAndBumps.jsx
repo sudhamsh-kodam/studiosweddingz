@@ -20,15 +20,26 @@ const BornsAndBumps = () => {
   const bbServiceIds = ['maternity', 'babyShower', 'newborn', 'cradleCeremony', 'milestone', 'birthday'];
 
   const proceedWithSelection = (serviceId, packageId) => {
+    let existingState = {};
+    try {
+      const saved = sessionStorage.getItem('quoteBuilderState');
+      if (saved) existingState = JSON.parse(saved);
+    } catch (e) { /* ignore */ }
+
     const updatedState = {
       step: 3,
       selectedServices: [serviceId],
       selectedPackages: { [serviceId]: packageId },
       selectedAddons: [],
       addonQuantities: {},
+      selectedEvents: [],
       eventServices: {},
       eventDays: {},
       eventDates: {},
+      // Preserve customer info and event details so they don't have to re-fill
+      customerInfo: existingState.customerInfo || { name: '', email: '', phone: '' },
+      eventDetails: existingState.eventDetails || { date: '', location: '', numberOfDays: 1, specialRequests: '', referralSource: '' },
+      leadCaptured: existingState.leadCaptured || false,
     };
     try {
       sessionStorage.setItem('quoteBuilderState', JSON.stringify(updatedState));
