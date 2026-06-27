@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Shield, Clock, Star, Check, ArrowRight, Baby, Sparkles } from 'lucide-react';
 import SectionHeading from '../components/ui/SectionHeading';
@@ -12,6 +12,77 @@ import bbHero from '../assets/images/bb-hero.png';
 const BornsAndBumps = () => {
   const [activeService, setActiveService] = useState('maternity');
   const [lightboxImg, setLightboxImg] = useState(null);
+  const navigate = useNavigate();
+
+  const [showClearQuotePopup, setShowClearQuotePopup] = useState(false);
+  const [pendingSelection, setPendingSelection] = useState(null);
+
+  const bbServiceIds = ['maternity', 'babyShower', 'newborn', 'cradleCeremony', 'milestone', 'birthday'];
+
+  const proceedWithSelection = (serviceId, packageId) => {
+    const updatedState = {
+      step: 3,
+      selectedServices: [serviceId],
+      selectedPackages: { [serviceId]: packageId },
+      selectedAddons: [],
+      addonQuantities: {},
+      eventServices: {},
+      eventDays: {},
+      eventDates: {},
+    };
+    try {
+      sessionStorage.setItem('quoteBuilderState', JSON.stringify(updatedState));
+    } catch (e) {
+      console.error("Error writing to sessionStorage", e);
+    }
+    navigate('/build-quote');
+  };
+
+  const handleSelectPackage = (serviceId, packageId) => {
+    const mapping = {
+      maternity: 'maternity',
+      babyshower: 'babyShower',
+      newborn: 'newborn',
+      cradle: 'cradleCeremony',
+      milestone: 'milestone',
+      birthday: 'birthday'
+    };
+    const mappedServiceId = mapping[serviceId] || serviceId;
+
+    let existingState = null;
+    try {
+      const saved = sessionStorage.getItem('quoteBuilderState');
+      if (saved) existingState = JSON.parse(saved);
+    } catch (e) {
+      console.error("Error reading from sessionStorage", e);
+    }
+
+    if (existingState && existingState.selectedServices && existingState.selectedServices.length > 0) {
+      const hasConflict = existingState.selectedServices.some(
+        (s) => !bbServiceIds.includes(s) || s !== mappedServiceId
+      );
+      if (hasConflict) {
+        setPendingSelection({ serviceId: mappedServiceId, packageId });
+        setShowClearQuotePopup(true);
+        return;
+      }
+    }
+
+    proceedWithSelection(mappedServiceId, packageId);
+  };
+
+  const handleConfirmClearQuote = () => {
+    if (pendingSelection) {
+      proceedWithSelection(pendingSelection.serviceId, pendingSelection.packageId);
+    }
+    setShowClearQuotePopup(false);
+    setPendingSelection(null);
+  };
+
+  const handleCancelClearQuote = () => {
+    setShowClearQuotePopup(false);
+    setPendingSelection(null);
+  };
 
   return (
     <motion.main {...pageTransition}>
@@ -237,11 +308,11 @@ const BornsAndBumps = () => {
                     ))}
                   </ul>
                   <Button
-                    to="/build-quote"
                     variant={pkg.popular ? 'primary' : 'outline'}
                     size="md"
                     className="w-full justify-center"
                     icon
+                    onClick={() => handleSelectPackage(activeService, pkg.id)}
                   >
                     Select {pkg.name}
                   </Button>
@@ -420,6 +491,51 @@ const BornsAndBumps = () => {
           </motion.div>
         </div>
       </section>
+      {/* ═══════════════════════ CLEAR QUOTE POPUP ═══════════════════════ */}
+      <AnimatePresence>
+        {showClearQuotePopup && (
+          <motion.div
+            className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="absolute inset-0 bg-noir/80 backdrop-blur-sm" onClick={handleCancelClearQuote} />
+            <motion.div
+              className="relative bg-noir-light border border-gold/20 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-gold/10 flex items-center justify-center">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <h3 className="font-playfair text-2xl text-ivory mb-3">
+                Existing Quote Found
+              </h3>
+              <p className="font-inter text-ivory/60 text-sm leading-relaxed mb-8">
+                You already have a quote in progress with different services. Would you like to clear it and start fresh with your new selection?
+              </p>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={handleCancelClearQuote}
+                  className="px-6 py-3 rounded-lg border border-ivory/20 text-ivory/70 font-inter text-sm hover:bg-ivory/5 hover:border-ivory/30 transition-all duration-300 cursor-pointer"
+                >
+                  No, Keep It
+                </button>
+                <button
+                  onClick={handleConfirmClearQuote}
+                  className="px-6 py-3 rounded-lg bg-gold text-noir font-inter text-sm font-semibold hover:bg-gold-light transition-all duration-300 cursor-pointer"
+                >
+                  Yes, Start Fresh
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.main>
   );
 };

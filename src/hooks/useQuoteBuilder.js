@@ -230,10 +230,26 @@ export const useQuoteBuilder = () => {
   }, [state.customerInfo, state.eventDetails, state.leadCaptured]);
 
   const applicableAddons = useMemo(() => {
-    return addons.filter((addon) =>
-      addon.applicableTo.some((s) => state.selectedServices.includes(s))
-    );
-  }, [state.selectedServices]);
+    return addons.filter((addon) => {
+      if (addon.id === 'standardalbum') {
+        let isEligible = false;
+        if (state.selectedServices.includes('milestone')) {
+          const tier = state.selectedPackages['milestone'];
+          if (tier === 'essential' || tier === 'premium') {
+            isEligible = true;
+          }
+        }
+        if (state.selectedServices.includes('maternity')) {
+          const tier = state.selectedPackages['maternity'];
+          if (tier === 'premium' || tier === 'luxury') {
+            isEligible = true;
+          }
+        }
+        if (!isEligible) return false;
+      }
+      return addon.applicableTo.some((s) => state.selectedServices.includes(s));
+    });
+  }, [state.selectedServices, state.selectedPackages]);
 
   const totalPrice = useMemo(() => {
     let total = 0;
@@ -252,7 +268,10 @@ export const useQuoteBuilder = () => {
         if (s) total += s.price * days;
       });
     });
-    state.selectedAddons.forEach((addonId) => {
+    const activeAddons = state.selectedAddons.filter((id) =>
+      applicableAddons.some((a) => a.id === id)
+    );
+    activeAddons.forEach((addonId) => {
       const addon = addons.find((a) => a.id === addonId);
       if (addon) {
         const qty = state.addonQuantities?.[addonId] || 1;
@@ -260,7 +279,7 @@ export const useQuoteBuilder = () => {
       }
     });
     return total;
-  }, [state.selectedPackages, state.eventServices, state.selectedAddons, state.addonQuantities, state.eventDays]);
+  }, [state.selectedPackages, state.eventServices, state.selectedAddons, state.addonQuantities, state.eventDays, applicableAddons]);
 
   const canProceed = useMemo(() => {
     switch (state.step) {
@@ -315,7 +334,10 @@ export const useQuoteBuilder = () => {
          });
       }
     });
-    state.selectedAddons.forEach((addonId) => {
+    const activeAddons = state.selectedAddons.filter((id) =>
+      applicableAddons.some((a) => a.id === id)
+    );
+    activeAddons.forEach((addonId) => {
       const addon = addons.find((a) => a.id === addonId);
       if (addon) {
         const qty = state.addonQuantities?.[addonId] || 1;
@@ -328,7 +350,7 @@ export const useQuoteBuilder = () => {
       }
     });
     return { items, total: totalPrice, eventDetails: state.eventDetails, customerInfo: state.customerInfo };
-  }, [state, totalPrice]);
+  }, [state, totalPrice, applicableAddons]);
 
 
   return {

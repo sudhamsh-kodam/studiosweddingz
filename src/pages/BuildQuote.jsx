@@ -1050,7 +1050,7 @@ const BuildQuote = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {q.applicableAddons.map((a) => {
                           const sel = q.selectedAddons.includes(a.id);
-                          const isAlbum = a.id === 'pressbook' || a.id === 'magnumalbum';
+                          const isAlbum = a.id === 'pressbook' || a.id === 'magnumalbum' || a.id === 'standardalbum';
                           const qty = q.addonQuantities?.[a.id] || 0;
                           return (
                             <div 
