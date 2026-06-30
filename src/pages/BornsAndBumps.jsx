@@ -17,7 +17,7 @@ const BornsAndBumps = () => {
   const [showClearQuotePopup, setShowClearQuotePopup] = useState(false);
   const [pendingSelection, setPendingSelection] = useState(null);
 
-  const bbServiceIds = ['maternity', 'babyShower', 'newborn', 'cradleCeremony', 'milestone', 'birthday'];
+  const bbServiceIds = ['maternity', 'babyShower', 'newborn', 'cradleCeremony', 'milestone', 'birthday', 'birthdayPreshoot'];
 
   const proceedWithSelection = (serviceId, packageId) => {
     let existingState = {};
@@ -330,6 +330,64 @@ const BornsAndBumps = () => {
                 </div>
               ))}
             </motion.div>
+          </AnimatePresence>
+
+          {/* Pre-Shoot / Cake Smash Packages (shown only for Birthday) */}
+          <AnimatePresence>
+            {activeService === 'birthday' && bbPackages.birthdayPreshoot && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-16 max-w-5xl mx-auto"
+              >
+                <div className="text-center mb-8">
+                  <p className="font-cormorant text-gold text-sm uppercase tracking-[0.3em] mb-2">Add-On</p>
+                  <h3 className="font-playfair text-2xl md:text-3xl text-ivory">Pre-Shoot / Cake Smash</h3>
+                  <p className="font-inter text-ivory/40 text-sm mt-2 max-w-md mx-auto">Add a pre-birthday photo or video session to make the celebration even more special.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                  {bbPackages.birthdayPreshoot.map((pkg) => (
+                    <div
+                      key={pkg.id}
+                      className={`relative p-8 rounded-sm border transition-all duration-500 flex flex-col ${
+                        pkg.popular
+                          ? 'border-gold/40 bg-gold/[0.05] shadow-lg shadow-gold/5 scale-[1.02]'
+                          : 'border-ivory/10 bg-ivory/[0.02] hover:border-ivory/20'
+                      }`}
+                    >
+                      {pkg.popular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-gold text-noir text-xs font-inter font-bold tracking-wider uppercase rounded-sm">
+                          Best Value
+                        </div>
+                      )}
+                      <h4 className="font-playfair text-xl text-ivory mb-2">{pkg.name}</h4>
+                      <div className="mb-6">
+                        <span className="font-playfair text-4xl text-gold">₹{pkg.price.toLocaleString('en-IN')}</span>
+                      </div>
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {pkg.features.map((f) => (
+                          <li key={f} className="flex items-start gap-3">
+                            <Check size={16} className="text-gold flex-shrink-0 mt-0.5" />
+                            <span className="font-inter text-sm text-ivory/60">{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button
+                        variant={pkg.popular ? 'primary' : 'outline'}
+                        size="md"
+                        className="w-full justify-center"
+                        icon
+                        onClick={() => handleSelectPackage('birthdayPreshoot', pkg.id)}
+                      >
+                        Select {pkg.name}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           <motion.p

@@ -392,6 +392,43 @@ export const bbPackages = {
       ],
     },
   ],
+  birthdayPreshoot: [
+    {
+      id: 'photo_only',
+      name: 'Photography Only',
+      price: 10000,
+      popular: false,
+      features: [
+        'Photography',
+        '4 hour session',
+        'Digital delivery',
+      ],
+    },
+    {
+      id: 'video_only',
+      name: 'Videography Only',
+      price: 10000,
+      popular: false,
+      features: [
+        'Videography',
+        '4 hour session',
+        'Digital delivery',
+      ],
+    },
+    {
+      id: 'photo_video_studio',
+      name: 'Photo + Video + Studio',
+      price: 30000,
+      popular: true,
+      features: [
+        'Photography',
+        'Videography',
+        'Studio charges included',
+        '4 hour session',
+        'Digital delivery',
+      ],
+    },
+  ],
 };
 
 export const bbTestimonials = [

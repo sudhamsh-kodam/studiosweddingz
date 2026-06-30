@@ -37,15 +37,16 @@ export const packageTiers = {
     { id: 'premium', name: 'Premium', price: 35000, popular: true, features: ['2 hour session', '3 looks/outfits', '30 edited photos', 'Studio + location', 'Art direction', 'Advanced retouching', 'Online gallery'] },
     { id: 'luxury', name: 'Luxury', price: 60000, popular: false, features: ['4 hour session', '5+ looks/outfits', '50+ edited photos', 'Multiple locations', 'Hair & makeup artist', 'Professional styling', 'Magazine-grade retouching', 'Fine art prints (5 prints)', 'Portfolio book'] },
   ],
-  sareeCeremony: [
-    { id: 'essential', name: 'Essential', price: 20000, popular: false, features: ['Traditional photography', 'Traditional videography', 'Digital delivery', 'Edited Video', '6 hours session'] },
-    { id: 'premium', name: 'Premium', price: 30000, popular: true, features: ['Traditional photography', 'Traditional videography', 'Candid photographer / Cinematography', 'Digital delivery', 'Edited Video', 'Promo', '6 hours session'] },
-    { id: 'luxury', name: 'Luxury', price: 50000, popular: false, features: ['Traditional photography', 'Traditional videography', 'Candid photographer', 'Cinematography', 'Digital delivery', 'Edited Video', 'Teaser', 'Promo', '6 hours session'] },
-  ],
+
   birthday: [
     { id: 'essential', name: 'Essential', price: 20000, popular: false, features: ['Traditional photography', 'Traditional videography', 'Digital delivery', 'Edited Video', '6 hours session'] },
     { id: 'premium', name: 'Premium', price: 30000, popular: true, features: ['Traditional photography', 'Traditional videography', 'Candid photographer / Cinematography', 'Digital delivery', 'Edited Video', 'Promo', '6 hours session'] },
     { id: 'luxury', name: 'Luxury', price: 50000, popular: false, features: ['Traditional photography', 'Traditional videography', 'Candid photographer', 'Cinematography', 'Digital delivery', 'Edited Video', 'Teaser', 'Promo', '6 hours session'] },
+  ],
+  birthdayPreshoot: [
+    { id: 'photo_only', name: 'Photography Only', price: 10000, popular: false, features: ['Photography', '4 hour session', 'Digital delivery'] },
+    { id: 'video_only', name: 'Videography Only', price: 10000, popular: false, features: ['Videography', '4 hour session', 'Digital delivery'] },
+    { id: 'photo_video_studio', name: 'Photo + Video + Studio', price: 30000, popular: true, features: ['Photography', 'Videography', 'Studio charges included', '4 hour session', 'Digital delivery'] },
   ],
   cradleCeremony: [
     { id: 'essential', name: 'Essential', price: 20000, popular: false, features: ['Traditional photography', 'Traditional videography', 'Digital delivery', 'Edited Video', '6 hours session'] },
@@ -88,6 +89,14 @@ export const weddingEvents = [
   { id: 'vratham', name: 'Vratham', image: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Auspicious pre-wedding pooja rituals' },
 ];
 
+export const sareeEvents = [
+  { id: 'saree_haldi', name: 'Haldi', image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Vibrant haldi ceremony celebrations' },
+  { id: 'saree_mehendi', name: 'Mehendi', image: 'https://images.unsplash.com/photo-1562635398-333eec2edeb7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Beautiful mehendi art and celebrations' },
+  { id: 'saree_sangeet', name: 'Sangeet', image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'A night of dance, music, and celebration' },
+  { id: 'saree_preshoot', name: 'Pre-Shoot', image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'A beautiful portrait session before the ceremony' },
+  { id: 'saree_ceremony', name: 'Saree / Dhoti Ceremony', image: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'The traditional coming-of-age saree or dhoti ceremony' },
+];
+
 export const eventServicesList = [
   { id: 'traditional_photo', name: 'Traditional Photo', icon: '📷', price: 10000 },
   { id: 'candid_photo', name: 'Candid Photo', icon: '📸', price: 15000 },
@@ -100,4 +109,4 @@ export const eventServicesList = [
   { id: 'prewedding_photo_video', name: 'Photography & Videography', icon: '🎥', price: 40000 },
 ];
 
-export default { quoteServices, packageTiers, addons, weddingEvents, eventServicesList };
+export default { quoteServices, packageTiers, addons, weddingEvents, sareeEvents, eventServicesList };

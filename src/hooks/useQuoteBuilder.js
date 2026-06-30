@@ -1,5 +1,9 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { packageTiers, addons, eventServicesList, weddingEvents } from '../data/quoteOptions';
+import { packageTiers, addons, eventServicesList, weddingEvents, sareeEvents } from '../data/quoteOptions';
+
+const allEvents = [...weddingEvents, ...sareeEvents];
+const eventBasedServices = ['wedding', 'sareeCeremony'];
+const isEventBased = (serviceId) => eventBasedServices.includes(serviceId);
 
 const initialState = {
   step: 1,
@@ -85,10 +89,19 @@ export const useQuoteBuilder = () => {
   }, []);
 
   const selectPackage = useCallback((serviceId, tierId) => {
-    setState((prev) => ({
-      ...prev,
-      selectedPackages: { ...prev.selectedPackages, [serviceId]: tierId },
-    }));
+    setState((prev) => {
+      const currentSelection = prev.selectedPackages[serviceId];
+      const updatedPackages = { ...prev.selectedPackages };
+      if (currentSelection === tierId) {
+        delete updatedPackages[serviceId];
+      } else {
+        updatedPackages[serviceId] = tierId;
+      }
+      return {
+        ...prev,
+        selectedPackages: updatedPackages,
+      };
+    });
   }, []);
 
   const toggleEvent = useCallback((eventId) => {
@@ -285,7 +298,7 @@ export const useQuoteBuilder = () => {
     switch (state.step) {
       case 1: return state.selectedServices.length > 0;
       case 2: 
-        if (state.selectedServices.includes('wedding')) {
+        if (state.selectedServices.some(isEventBased)) {
           const hasAnyService = Object.values(state.eventServices).some(services => services?.length > 0);
           return hasAnyService;
         }
@@ -313,7 +326,7 @@ export const useQuoteBuilder = () => {
       }
     });
     Object.entries(state.eventServices).forEach(([eventId, services]) => {
-      const eventObj = weddingEvents.find(e => e.id === eventId);
+      const eventObj = allEvents.find(e => e.id === eventId);
       const isMulti = eventObj?.multiDay;
       const days = isMulti ? (state.eventDays?.[eventId] || 1) : 1;
       const eventServicesArr = services.map(serviceId => {

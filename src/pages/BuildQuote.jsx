@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuoteBuilder } from '../hooks/useQuoteBuilder';
-import { quoteServices, packageTiers, addons, weddingEvents, eventServicesList } from '../data/quoteOptions';
+import { quoteServices, packageTiers, addons, weddingEvents, sareeEvents, eventServicesList } from '../data/quoteOptions';
 import { Check, ChevronRight, ChevronLeft, Sparkles, ArrowRight, Calendar, MapPin, MessageSquare, X, User, Phone, Minus, Plus, Clock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import GoldDivider from '../components/ui/GoldDivider';
@@ -340,6 +340,16 @@ const BuildQuote = () => {
   });
   const [eventSelectionDone, setEventSelectionDone] = useState(false);
 
+  // Helpers for event-based services (wedding, sareeCeremony)
+  const allEvents = [...weddingEvents, ...sareeEvents];
+  const hasEventBasedService = q.selectedServices.some(s => s === 'wedding' || s === 'sareeCeremony');
+  const getActiveEventsList = () => {
+    if (q.selectedServices.includes('wedding')) return weddingEvents;
+    if (q.selectedServices.includes('sareeCeremony')) return sareeEvents;
+    return [];
+  };
+  const activeEventsList = getActiveEventsList();
+  const activeEventsTitle = q.selectedServices.includes('sareeCeremony') ? 'Select Your Ceremony Events' : 'Select Your Wedding Events';
 
 
   const pageTopRef = useRef(null);
@@ -635,7 +645,7 @@ const BuildQuote = () => {
                   {/* Step 2: Packages or Events */}
                   {q.step === 2 && (
                     <div className="space-y-10">
-                      {q.selectedServices.includes('wedding') ? (
+                      {hasEventBasedService ? (
                         <div>
                           {!eventSelectionDone ? (
                             <motion.div
@@ -647,7 +657,7 @@ const BuildQuote = () => {
                             >
                               <div className="text-center">
                                 <h2 className="font-playfair text-3xl md:text-4xl text-ivory mb-3">
-                                  Select Your Wedding Events
+                                  {activeEventsTitle}
                                 </h2>
                                 <p className="text-ivory/50 font-inter text-sm max-w-lg mx-auto">
                                   Pick all the events you have planned. In the next step, you can select specific photography/videography services for each event.
@@ -656,7 +666,7 @@ const BuildQuote = () => {
 
                               {/* Grid of Events */}
                               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {weddingEvents.map((event) => {
+                                {activeEventsList.map((event) => {
                                   const isSelected = q.selectedEvents.includes(event.id);
                                   return (
                                     <div
@@ -729,17 +739,18 @@ const BuildQuote = () => {
                               {currentEventIndex < q.selectedEvents.length ? (
                                 (() => {
                                   const eventId = q.selectedEvents[currentEventIndex];
-                                  const event = weddingEvents.find(e => e.id === eventId);
+                                  const event = allEvents.find(e => e.id === eventId);
                                   if (!event) return null;
 
                                   const filteredServices = eventServicesList.filter(srv => {
-                                    if (event.id === 'prewedding') {
+                                    if (event.id === 'prewedding' || event.id === 'saree_preshoot') {
                                       return srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video';
                                     }
                                     if (srv.id === 'prewedding_photo' || srv.id === 'prewedding_photo_video') return false;
 
-                                    // Only show Live Streaming and LED Screen for Wedding Day and Reception
-                                    if ((srv.id === 'live_streaming' || srv.id === 'led_screen') && event.id !== 'wedding' && event.id !== 'reception') {
+                                    // Only show Live Streaming and LED Screen for Wedding Day, Reception, Saree Sangeet, and Saree Ceremony
+                                    const isLiveStreamingLedAllowed = event.id === 'wedding' || event.id === 'reception' || event.id === 'saree_sangeet' || event.id === 'saree_ceremony';
+                                    if ((srv.id === 'live_streaming' || srv.id === 'led_screen') && !isLiveStreamingLedAllowed) {
                                       return false;
                                     }
 
@@ -747,6 +758,12 @@ const BuildQuote = () => {
                                     if (event.id === 'vratham' && (srv.id === 'candid_photo' || srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
                                     if (event.id === 'mehendi' && (srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
                                     if (event.id === 'cocktail' && (srv.id === 'drone' || srv.id === 'traditional_video')) return false;
+
+                                    // Saree ceremony event rules
+                                    if (event.id.startsWith('saree_')) {
+                                      // Saree Mehendi: no cinematic video, no drone
+                                      if (event.id === 'saree_mehendi' && (srv.id === 'cinematic_video' || srv.id === 'drone')) return false;
+                                    }
                                     return true;
                                   });
 
@@ -917,15 +934,22 @@ const BuildQuote = () => {
                                           </div>
 
                                           {/* Navigation */}
+                                          {(() => {
+                                            const hasServiceForEvent = q.eventServices[event.id]?.length > 0;
+                                            return (
                                           <div className="flex flex-col items-center gap-4">
                                             <button
+                                              disabled={!hasServiceForEvent}
                                               onClick={() => {
                                                 setCurrentEventIndex(prev => prev + 1);
                                               }}
-                                              className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
+                                              className={`flex items-center gap-2 px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide transition-all ${hasServiceForEvent ? 'bg-gradient-gold text-noir hover:shadow-lg hover:shadow-gold/20' : 'bg-ivory/5 text-ivory/20 cursor-not-allowed'}`}
                                             >
                                               <Check size={14} /> Next Event
                                             </button>
+                                            {!hasServiceForEvent && (
+                                              <p className="text-gold/50 font-inter text-xs animate-pulse">Please select at least one service for this event</p>
+                                            )}
                                             <button
                                               onClick={() => {
                                                 if (currentEventIndex > 0) {
@@ -951,6 +975,8 @@ const BuildQuote = () => {
                                               Remove this event
                                             </button>
                                           </div>
+                                            );
+                                          })()}
 
                                           {/* Progress dots */}
                                           <div className="flex justify-center gap-1.5 mt-8">
@@ -967,46 +993,65 @@ const BuildQuote = () => {
                                   );
                                 })()
                               ) : (
+                                (() => {
+                                  const hasAnyServices = Object.values(q.eventServices).some(services => services?.length > 0);
+                                  const configuredCount = Object.entries(q.eventServices).filter(([_, services]) => services?.length > 0).length;
+                                  return (
                                 <motion.div
                                   initial={{ opacity: 0, scale: 0.95 }}
                                   animate={{ opacity: 1, scale: 1 }}
                                   className="text-center py-12"
                                 >
-                                  {/* Running Total Pill */}
-                                  <div className="flex justify-center mb-8">
-                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/20 rounded-full px-6 py-2.5">
-                                      <span className="text-ivory/60 font-inter text-xs uppercase tracking-widest">Estimate</span>
-                                      <span className="text-gold font-playfair text-xl font-semibold">{formatPrice(q.totalPrice)}</span>
-                                    </div>
-                                  </div>
-
-                                  <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Check className="text-gold" size={32} />
-                                  </div>
-                                  <h3 className="font-playfair text-2xl text-ivory mb-3">All Events Configured</h3>
-                                  <p className="text-ivory/50 font-inter text-sm mb-8 max-w-sm mx-auto">
-                                    {q.selectedEvents.length > 0
-                                      ? `You've selected and configured ${q.selectedEvents.length} event${q.selectedEvents.length === 1 ? '' : 's'} for coverage.`
-                                      : 'No events selected. You can go back to add events.'}
-                                  </p>
+                                  {hasAnyServices ? (
+                                    <>
+                                      {/* Running Total Pill */}
+                                      <div className="flex justify-center mb-8">
+                                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/20 rounded-full px-6 py-2.5">
+                                          <span className="text-ivory/60 font-inter text-xs uppercase tracking-widest">Estimate</span>
+                                          <span className="text-gold font-playfair text-xl font-semibold">{formatPrice(q.totalPrice)}</span>
+                                        </div>
+                                      </div>
+                                      <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <Check className="text-gold" size={32} />
+                                      </div>
+                                      <h3 className="font-playfair text-2xl text-ivory mb-3">All Events Configured</h3>
+                                      <p className="text-ivory/50 font-inter text-sm mb-8 max-w-sm mx-auto">
+                                        {`You've configured ${configuredCount} of ${q.selectedEvents.length} event${q.selectedEvents.length === 1 ? '' : 's'} with services.`}
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <span className="text-3xl">⚠️</span>
+                                      </div>
+                                      <h3 className="font-playfair text-2xl text-ivory mb-3">No Services Selected</h3>
+                                      <p className="text-ivory/50 font-inter text-sm mb-8 max-w-sm mx-auto">
+                                        You haven't selected any photography or videography services for your events. Please go back and choose at least one service to continue.
+                                      </p>
+                                    </>
+                                  )}
                                   <div className="flex flex-col items-center gap-3">
-                                    <button
-                                      onClick={q.nextStep}
-                                      className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
-                                    >
-                                      <Check size={14} /> Continue
-                                    </button>
+                                    {hasAnyServices && (
+                                      <button
+                                        onClick={q.nextStep}
+                                        className="flex items-center gap-2 bg-gradient-gold text-noir px-8 py-3 rounded-sm font-inter text-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20 transition-all"
+                                      >
+                                        <Check size={14} /> Continue
+                                      </button>
+                                    )}
                                     <button
                                       onClick={() => {
                                         setEventSelectionDone(false);
                                         setCurrentEventIndex(0);
                                       }}
-                                      className="flex items-center gap-1 text-gold/60 hover:text-gold font-inter text-xs transition-colors"
+                                      className={`flex items-center gap-1 font-inter text-xs transition-colors ${hasAnyServices ? 'text-gold/60 hover:text-gold' : 'bg-gradient-gold text-noir px-6 py-2.5 rounded-sm font-semibold tracking-wide hover:shadow-lg hover:shadow-gold/20'}`}
                                     >
-                                      <ChevronLeft size={14} /> Review events selection
+                                      <ChevronLeft size={14} /> {hasAnyServices ? 'Review events selection' : 'Go Back & Select Services'}
                                     </button>
                                   </div>
                                 </motion.div>
+                                  );
+                                })()
                               )}
                             </div>
                           )}
@@ -1014,28 +1059,58 @@ const BuildQuote = () => {
                       ) : (
                         q.selectedServices.map((sId) => {
                           const tiers = packageTiers[sId] || [];
+                          const showPreshoot = sId === 'birthday';
+                          const preshootTiers = packageTiers['birthdayPreshoot'] || [];
                           return (
-                            <div key={sId}>
-                              <h3 className="font-playfair text-lg text-ivory mb-4 capitalize">{sId.replace(/([A-Z])/g, ' $1').trim()} Package</h3>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {tiers.map((tier) => {
-                                  const sel = q.selectedPackages[sId] === tier.id;
-                                  return (
-                                    <button key={tier.id} onClick={() => q.selectPackage(sId, tier.id)} className={`p-5 rounded-sm text-left transition-all duration-400 relative ${sel ? 'border-2 border-gold bg-gold/5' : 'border border-ivory/10 hover:border-ivory/20'}`}>
-                                      {tier.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gold text-noir text-[10px] font-inter font-bold uppercase tracking-wider rounded-sm">Popular</span>}
-                                      <h4 className="font-playfair text-base text-ivory mb-1">{tier.name}</h4>
-                                      <p className="text-gold text-lg font-inter font-semibold mb-3">{formatPrice(tier.price)}</p>
-                                      <ul className="space-y-1.5">
-                                        {tier.features.map((f, i) => (
-                                          <li key={i} className="flex items-start gap-2 text-ivory/40 text-xs font-inter">
-                                            <Check size={12} className="text-gold mt-0.5 flex-shrink-0" />{f}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </button>
-                                  );
-                                })}
+                            <div key={sId} className="space-y-10">
+                              <div>
+                                <h3 className="font-playfair text-lg text-ivory mb-4 capitalize">{sId.replace(/([A-Z])/g, ' $1').trim()} Package</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  {tiers.map((tier) => {
+                                    const sel = q.selectedPackages[sId] === tier.id;
+                                    return (
+                                      <button key={tier.id} onClick={() => q.selectPackage(sId, tier.id)} className={`p-5 rounded-sm text-left transition-all duration-400 relative ${sel ? 'border-2 border-gold bg-gold/5' : 'border border-ivory/10 hover:border-ivory/20'}`}>
+                                        {tier.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gold text-noir text-[10px] font-inter font-bold uppercase tracking-wider rounded-sm">Popular</span>}
+                                        <h4 className="font-playfair text-base text-ivory mb-1">{tier.name}</h4>
+                                        <p className="text-gold text-lg font-inter font-semibold mb-3">{formatPrice(tier.price)}</p>
+                                        <ul className="space-y-1.5">
+                                          {tier.features.map((f, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-ivory/40 text-xs font-inter">
+                                              <Check size={12} className="text-gold mt-0.5 flex-shrink-0" />{f}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
                               </div>
+
+                              {showPreshoot && (
+                                <div>
+                                  <h3 className="font-playfair text-lg text-ivory mb-1">Pre-Shoot / Cake Smash Package <span className="text-xs text-ivory/40 italic font-inter ml-2">(Optional Add-on)</span></h3>
+                                  <p className="text-xs text-ivory/50 font-inter mb-4">Add a pre-birthday photo or video session to make the celebration even more special.</p>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {preshootTiers.map((tier) => {
+                                      const sel = q.selectedPackages['birthdayPreshoot'] === tier.id;
+                                      return (
+                                        <button key={tier.id} onClick={() => q.selectPackage('birthdayPreshoot', tier.id)} className={`p-5 rounded-sm text-left transition-all duration-400 relative ${sel ? 'border-2 border-gold bg-gold/5' : 'border border-ivory/10 hover:border-ivory/20'}`}>
+                                          {tier.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gold text-noir text-[10px] font-inter font-bold uppercase tracking-wider rounded-sm">Best Value</span>}
+                                          <h4 className="font-playfair text-base text-ivory mb-1">{tier.name}</h4>
+                                          <p className="text-gold text-lg font-inter font-semibold mb-3">{formatPrice(tier.price)}</p>
+                                          <ul className="space-y-1.5">
+                                            {tier.features.map((f, i) => (
+                                              <li key={i} className="flex items-start gap-2 text-ivory/40 text-xs font-inter">
+                                                <Check size={12} className="text-gold mt-0.5 flex-shrink-0" />{f}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           );
                         })
@@ -1240,7 +1315,7 @@ const BuildQuote = () => {
                 {q.step > 1 ? (
                   <button
                     onClick={() => {
-                      if (q.step === 2 && q.selectedServices.includes('wedding') && eventSelectionDone) {
+                      if (q.step === 2 && hasEventBasedService && eventSelectionDone) {
                         setEventSelectionDone(false);
                         setCurrentEventIndex(0);
                       } else {
@@ -1253,8 +1328,8 @@ const BuildQuote = () => {
                   </button>
                 ) : <div />}
                 
-                {q.step === 1 || (q.step === 2 && q.selectedServices.includes('wedding')) ? (
-                  <div /> // Hide global Next button on step 1 and step 2 wedding, rely on the inline buttons
+                {q.step === 1 || (q.step === 2 && hasEventBasedService) ? (
+                  <div /> // Hide global Next button on step 1 and step 2 event-based services, rely on the inline buttons
                 ) : q.step < 5 ? (
                   <button onClick={q.nextStep} disabled={!q.canProceed} className={`flex items-center gap-2 px-6 py-3 rounded-sm font-inter text-sm tracking-wide transition-all duration-400 ${q.canProceed?'bg-gradient-gold text-noir hover:shadow-lg hover:shadow-gold/20':'bg-ivory/5 text-ivory/20 cursor-not-allowed'}`}>Next <ChevronRight size={16}/></button>
                 ) : (
