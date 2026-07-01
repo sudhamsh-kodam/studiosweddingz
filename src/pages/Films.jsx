@@ -36,7 +36,7 @@ const Films = () => {
         <div className="max-container section-padding">
           <SectionHeading
             subtitle="Watch"
-            title="Cinematic Wedding Films"
+            title="Cinematic Films"
             description="Experience the emotion, the grandeur, and the love through our cinematic films."
           />
 
@@ -57,7 +57,7 @@ const Films = () => {
                 <div className="relative overflow-hidden rounded-sm gold-border-hover">
                   <div className="aspect-video">
                     <img
-                      src={thumbnails[i % thumbnails.length]}
+                      src={film.thumbnail || thumbnails[i % thumbnails.length]}
                       alt={film.title}
                       className="w-full h-full object-cover transition-transform duration-700 ease-luxury group-hover:scale-105"
                       loading="lazy"
